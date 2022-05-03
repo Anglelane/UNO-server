@@ -1,11 +1,12 @@
-import { ClientToServerEventsKeys } from "..";
 import roomControllers from "./room";
+import userControllers from "./user";
 
 type controllersType = {
-  [key in ClientToServerEventsKeys]: Function
+  [key in ServerToClientEventsKeys]: (data: any) => dataType<any>
 }
 const controllers: controllersType = {
-  ...roomControllers
+  ...roomControllers,
+  ...userControllers
 }
 
 export default controllers;
