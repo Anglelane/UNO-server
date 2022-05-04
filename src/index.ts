@@ -12,9 +12,11 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 });
 
 io.on("connection", (socket) => {
-  console.log('连接成功')
-  Object.keys(controllers).forEach((key: any) => {
-    socket.on(key as ClientToServerEventsKeys, (args) => {
+  console.log('连接成功');
+  Object.keys(controllers).forEach((key: string) => {
+    key = key.replace('RES_', '') as ClientToServerEventsKeys;
+    socket.on(key as ClientToServerEventsKeys, (args: dataType<any>) => {
+      console.log('args:', args)
       const { type, data } = args;
       const res = controllers[type](data);
       socket.emit(res.type, res)

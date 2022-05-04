@@ -15,9 +15,12 @@ const io = new socket_io_1.Server(httpServer, {
 io.on("connection", (socket) => {
     console.log('连接成功');
     Object.keys(controllers_1.default).forEach((key) => {
+        key = key.replace('RES_', '');
         socket.on(key, (args) => {
+            console.log('args:', args);
             const { type, data } = args;
-            controllers_1.default[type](data);
+            const res = controllers_1.default[type](data);
+            socket.emit(res.type, res);
         });
     });
 });
