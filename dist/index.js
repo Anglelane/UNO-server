@@ -17,11 +17,15 @@ io.on("connection", (socket) => {
     Object.keys(controllers_1.default).forEach((key) => {
         key = key.replace('RES_', '');
         socket.on(key, (args) => {
-            console.log('args:', args);
+            console.log(key, ':', args);
             const { type, data } = args;
-            const res = controllers_1.default[type](data);
+            const res = (0, controllers_1.default)(io)[type](data, socket);
+            console.log(type, ':', res);
             socket.emit(res.type, res);
         });
+    });
+    socket.on('error', (error) => {
+        console.error('error:', error);
     });
 });
 httpServer.listen(3000);

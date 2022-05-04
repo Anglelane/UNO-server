@@ -1,11 +1,13 @@
-export const roomCollection = new Map();
+export const roomCollection = new Map<string,RoomInfo>();
 
-export function createRoom(args: any): any {
-  const { id, name, owner } = args
+export function createRoom(args: any,code:string): any {
+  const { roomId, roomName, owner } = args
   const newLocal = {
-    roomId: id,
-    roomName: name,
+    roomId,
+    roomName,
     owner,
+    roomCode:code,
+    players:{},
     gameCard: [],
     userCards: {},
     order: [],

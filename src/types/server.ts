@@ -17,6 +17,11 @@ declare type ServerToClientEventsKeys = `RES_${ClientToServerEventsKeys}`
 declare interface ClientToServerEvents {
   CREATE_ROOM: (data: dataType<RoomData>) => void;
   CREATE_USER: (data: dataType<UserInfo>) => void;
+  JOIN_ROOM: (data: dataType<{ roomCode: string, playerInfo: PlayerInfo }>) => void;
 }
 
 declare interface InterServerEvents{}
+
+declare type controllersType = {
+  [key in ServerToClientEventsKeys]: (data: any,sc:any) => dataType<any>
+}
