@@ -9,19 +9,19 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
   serveClient: false
 });
 
+
 export type ServerType = typeof io;
 export type SocketType = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents>;
 
 io.on("connection", (socket) => {
   console.log('连接成功');
-  Object.keys(controllers).forEach((key: string) => {
-    key = key.replace('RES_', '') as ClientToServerEventsKeys;
-    socket.on(key as ClientToServerEventsKeys, (args: dataType<any>) => {
+  Object.keys(controllers).forEach((key) => {
+    socket.on(key as ClientToServerEventsKeys, (args: ClientDataType<ClientToServerEventsKeys, any>) => {
       console.log(key, ':', args)
       const { type, data } = args;
-      const res = controllers(io)[type](data,socket);
+      const res = (controllers as Controllers<SocketType, ServerType>)[type](data, socket, io);
       console.log(type, ':', res)
-      socket.emit(res.type, res)
+      socket.emit(res.type, res as any)
     });
   })
   socket.on('error', (error) => {

@@ -15,11 +15,11 @@ const io = new socket_io_1.Server(httpServer, {
 io.on("connection", (socket) => {
     console.log('连接成功');
     Object.keys(controllers_1.default).forEach((key) => {
-        key = key.replace('RES_', '');
         socket.on(key, (args) => {
             console.log(key, ':', args);
             const { type, data } = args;
-            const res = (0, controllers_1.default)(io)[type](data, socket);
+            console.log('type:', type);
+            const res = controllers_1.default[type](data, socket, io);
             console.log(type, ':', res);
             socket.emit(res.type, res);
         });
