@@ -1,7 +1,7 @@
 import { ServerType, SocketType } from '..';
 import { createUser, userCollection } from '../services/user'
 import { has, set } from '../utils/customCRUD';
-const userControllers: Partial<Controllers<SocketType, ServerType>> = {
+const userControllers: Controllers<ClientUserKeys,SocketType, ServerType>= {
   'CREATE_USER': (args) => {
     const { id, name } = args as UserInfo;
     const key = (id + name);

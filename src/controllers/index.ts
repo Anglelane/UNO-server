@@ -1,8 +1,8 @@
-import {ServerType, SocketType } from "..";
+import { ServerType, SocketType } from "..";
 import roomControllers from "./room";
 import userControllers from "./user";
 
-const controllers = {
+const controllers:Controllers<ClientRoomKeys | ClientUserKeys, SocketType, ServerType> = {
   ...roomControllers,
   ...userControllers
 }

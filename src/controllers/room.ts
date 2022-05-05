@@ -2,7 +2,7 @@ import { ServerType, SocketType } from '..';
 import { createRoom, roomCollection } from '../services/room'
 import { randomCoding } from '../utils';
 import { get, has, set } from '../utils/customCRUD';
-const roomControllers: Partial<Controllers<SocketType, ServerType>> = {
+const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
   'CREATE_ROOM': (args, sc, io) => {
     const code = randomCoding();
     // 创建频道
@@ -25,7 +25,7 @@ const roomControllers: Partial<Controllers<SocketType, ServerType>> = {
       // 加入频道
       sc.join(roomCode);
       // 触发其他客户端更新数据
-      emitOtherPlayers(sc, roomCode, roomInfo.players);
+      emitOtherPlayers(sc, roomCode, roomInfo);
       return {
         message: '加入房间成功',
         data: roomInfo,
@@ -41,11 +41,7 @@ const roomControllers: Partial<Controllers<SocketType, ServerType>> = {
 }
 export default roomControllers;
 
-function emitOtherPlayers(sc: SocketType, code: string, players: UserInfo[]) {
-  sc.to(code).emit('UPDATE_PLAYER_LIST', {
-    message: '更新玩家列表',
-    data: players,
-    type: 'UPDATE_PLAYER_LIST'
-  })
+function emitOtherPlayers(sc: SocketType, roomCode: string, roomInfo: RoomInfo) {
+  sc.to(roomCode).emit('UPDATE_PLAYER_LIST', roomInfo.players as never);
 }
 

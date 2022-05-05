@@ -18,7 +18,6 @@ io.on("connection", (socket) => {
         socket.on(key, (args) => {
             console.log(key, ':', args);
             const { type, data } = args;
-            console.log('type:', type);
             const res = controllers_1.default[type](data, socket, io);
             console.log(type, ':', res);
             socket.emit(res.type, res);

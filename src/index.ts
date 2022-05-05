@@ -16,12 +16,12 @@ export type SocketType = Socket<ClientToServerEvents, ServerToClientEvents, Inte
 io.on("connection", (socket) => {
   console.log('连接成功');
   Object.keys(controllers).forEach((key) => {
-    socket.on(key as ClientToServerEventsKeys, (args: ClientDataType<ClientToServerEventsKeys, any>) => {
+    socket.on(key as any, (args: any) => {
       console.log(key, ':', args)
       const { type, data } = args;
-      const res = (controllers as Controllers<SocketType, ServerType>)[type](data, socket, io);
+      const res = controllers[type as ClientKeys](data, socket, io);
       console.log(type, ':', res)
-      socket.emit(res.type, res as any)
+      socket.emit(res.type as any, res as any)
     });
   })
   socket.on('error', (error) => {

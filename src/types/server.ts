@@ -25,26 +25,34 @@ interface EToD {
 
 type GetDataTypeOfEventName<E extends keyof EToD> = EToD[E]
 
-declare interface ClientToServerEvents {
-  'CREATE_ROOM': ClientEventListenersCb<'CREATE_ROOM', GetDataTypeOfEventName<'CREATE_ROOM'>>
-  'JOIN_ROOM': ClientEventListenersCb<'JOIN_ROOM', GetDataTypeOfEventName<'JOIN_ROOM'>>
-  'CREATE_USER': ClientEventListenersCb<'CREATE_USER', GetDataTypeOfEventName<'CREATE_USER'>>
+declare type ClientRoomKeys = 'CREATE_ROOM' | 'JOIN_ROOM'
+declare type ClientUserKeys = 'CREATE_USER'
+
+declare type ServerRoomKeys = addRESPrefix<ClientRoomKeys>
+declare type ServerUserKeys = addRESPrefix<ClientUserKeys>
+
+type ClientKeys = ClientRoomKeys | ClientUserKeys
+type ServerKeys = ServerRoomKeys | ServerUserKeys
+
+declare interface ClientToServerEvents extends Events<ClientKeys> {
+}
+declare interface ServerToClientEvents extends Events<ServerKeys> {
+  'UPDATE_PLAYER_LIST':Events<'UPDATE_PLAYER_LIST'>
 }
 
-declare interface ServerToClientEvents {
-  'RES_CREATE_ROOM': ServerEventListenersCb<'RES_CREATE_ROOM',  GetDataTypeOfEventName<'RES_CREATE_ROOM'>>
-  'RES_CREATE_USER': ServerEventListenersCb<'RES_CREATE_USER', GetDataTypeOfEventName<'RES_CREATE_USER'>>
-  'RES_JOIN_ROOM': ServerEventListenersCb<'RES_JOIN_ROOM', GetDataTypeOfEventName<'RES_JOIN_ROOM'>>
-  'UPDATE_PLAYER_LIST': ServerEventListenersCb<'UPDATE_PLAYER_LIST', GetDataTypeOfEventName<'UPDATE_PLAYER_LIST'>>
+declare type Events<T> = {
+  T: T extends ServerKeys
+  ? ServerEventListenersCb<T, T extends keyof EToD ? GetDataTypeOfEventName<T> : unknown>
+  : T extends ClientKeys
+  ? ClientEventListenersCb<T, T extends keyof EToD ? GetDataTypeOfEventName<T> : unknown>
+  : unknown;
 }
 
-declare type ClientToServerEventsKeys = keyof ClientToServerEvents
-declare type ServerToClientEventsKeys = keyof ServerToClientEvents
+type addRESPrefix<C> = C extends ClientRoomKeys | ClientUserKeys ? `RES_${C}` : C
 
-type s<C> = C extends ClientToServerEventsKeys ? `RES_${C}` : ''
-
-declare type Controllers<S, I> = {
-  [T in ClientToServerEventsKeys]: (args: GetDataTypeOfEventName<T>, sc: S, io: I) => ServerDataType<s<T>, GetDataTypeOfEventName<s<T>>>
+declare type Controllers<T extends keyof EToD, S, I> = {
+  [K in T]: (args: K extends keyof EToD ? GetDataTypeOfEventName<K> : unknown, sc: S, io: I) => ServerDataType<addRESPrefix<K>, addRESPrefix<K> extends keyof EToD ? GetDataTypeOfEventName<addRESPrefix<K>> : unknown>
 }
 
-declare interface InterServerEvents { }
+declare interface InterServerEvents {
+}

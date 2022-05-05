@@ -24,7 +24,8 @@ const roomControllers = {
             roomInfo.players.push(playerInfo);
             // 加入频道
             sc.join(roomCode);
-            emitOtherPlayers(sc, roomCode, roomInfo.players);
+            // 触发其他客户端更新数据
+            emitOtherPlayers(sc, roomCode, roomInfo);
             return {
                 message: '加入房间成功',
                 data: roomInfo,
@@ -39,10 +40,6 @@ const roomControllers = {
     },
 };
 exports.default = roomControllers;
-function emitOtherPlayers(sc, code, players) {
-    sc.to(code).emit('UPDATE_PLAYER_LIST', {
-        message: '更新玩家列表',
-        data: players,
-        type: 'UPDATE_PLAYER_LIST'
-    });
+function emitOtherPlayers(sc, roomCode, roomInfo) {
+    sc.to(roomCode).emit('UPDATE_PLAYER_LIST', roomInfo.players);
 }
