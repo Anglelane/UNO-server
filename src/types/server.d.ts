@@ -1,3 +1,6 @@
+import type { RoomData, RoomInfo, PlayerInfo } from "./room"
+import type { UserInfo } from "./user"
+
 declare interface ClientDataType<T, D> {
   type: T,
   data: D
@@ -21,24 +24,21 @@ interface EToD {
   'JOIN_ROOM': { roomCode: string, playerInfo: PlayerInfo }
   'RES_JOIN_ROOM': RoomInfo | null
   'UPDATE_PLAYER_LIST': PlayerInfo[]
+  'START_GAME':RoomInfo
 }
 
 type GetDataTypeOfEventName<E extends keyof EToD> = EToD[E]
 
-declare type ClientRoomKeys = 'CREATE_ROOM' | 'JOIN_ROOM'
+declare type ClientRoomKeys = 'CREATE_ROOM' | 'JOIN_ROOM' | 'START_GAME'
 declare type ClientUserKeys = 'CREATE_USER'
+
+type addRESPrefix<C> = C extends ClientRoomKeys | ClientUserKeys ? `RES_${C}` : C
 
 declare type ServerRoomKeys = addRESPrefix<ClientRoomKeys>
 declare type ServerUserKeys = addRESPrefix<ClientUserKeys>
 
 type ClientKeys = ClientRoomKeys | ClientUserKeys
 type ServerKeys = ServerRoomKeys | ServerUserKeys
-
-declare interface ClientToServerEvents extends Events<ClientKeys> {
-}
-declare interface ServerToClientEvents extends Events<ServerKeys> {
-  'UPDATE_PLAYER_LIST':Events<'UPDATE_PLAYER_LIST'>
-}
 
 declare type Events<T> = {
   T: T extends ServerKeys
@@ -48,10 +48,16 @@ declare type Events<T> = {
   : unknown;
 }
 
-type addRESPrefix<C> = C extends ClientRoomKeys | ClientUserKeys ? `RES_${C}` : C
+declare interface ClientToServerEvents extends Events<ClientKeys> {
+}
+declare interface ServerToClientEvents extends Events<ServerKeys> {
+  'UPDATE_PLAYER_LIST': Events<'UPDATE_PLAYER_LIST'>
+}
 
 declare type Controllers<T extends keyof EToD, S, I> = {
-  [K in T]: (args: K extends keyof EToD ? GetDataTypeOfEventName<K> : unknown, sc: S, io: I) => ServerDataType<addRESPrefix<K>, addRESPrefix<K> extends keyof EToD ? GetDataTypeOfEventName<addRESPrefix<K>> : unknown>
+  [K in T]: (args: K extends keyof EToD ? GetDataTypeOfEventName<K> : unknown, sc: S, io: I)
+  => ServerDataType<addRESPrefix<K>,
+  addRESPrefix<K> extends keyof EToD ? GetDataTypeOfEventName<addRESPrefix<K>> : unknown>
 }
 
 declare interface InterServerEvents {
