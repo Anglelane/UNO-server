@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cardInfomation = void 0;
+exports.InitCardNum = exports.cardInfomation = void 0;
 const genArr1To9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const genArr0To9 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 //  const genFuncCard1 = ['exchange', 'add-2', 'ban'];
@@ -41,3 +41,4 @@ const cardInfomation = () => [
     }),
 ];
 exports.cardInfomation = cardInfomation;
+exports.InitCardNum = 7;

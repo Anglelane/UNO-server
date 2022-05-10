@@ -1,4 +1,4 @@
-import { cardInfomation } from "../configs/card";
+import { cardInfomation, InitCardNum } from "../configs/card";
 import { shuffle } from "../utils";
 import type { ServerType, SocketType } from "..";
 import type { ServerDataType, ServerKeys } from "~/types/server";
@@ -16,7 +16,7 @@ export function createRoom(args: any, sc: SocketType, code: string): any {
     players: [],
     gameCards: [],
     userCards: {},
-    order: [],
+    order: 0,
     winnerOrder: [],
     createTime: Date.now(),
     startTime: -1,
@@ -37,12 +37,12 @@ export function createPlayer(userInfo: UserInfo, socketId: string): PlayerInfo {
 }
 
 // 通知指定房间的所有玩家
-export function emitOtherPlayers(io: ServerType, roomCode: string, event: ServerKeys, data: ServerDataType<typeof event, any>) {
+export function emitAllPlayers(io: ServerType, roomCode: string, event: ServerKeys, data: ServerDataType<typeof event, any>) {
   io.sockets.in(roomCode).emit(event, data as any)
 }
 
 export function updatePlayerListToPlayers(io: ServerType, roomCode: string, players: PlayerInfo[], message: string) {
-  emitOtherPlayers(io, roomCode, 'UPDATE_PLAYER_LIST', {
+  emitAllPlayers(io, roomCode, 'UPDATE_PLAYER_LIST', {
     message,
     data: players,
     type: 'UPDATE_PLAYER_LIST'
@@ -77,16 +77,28 @@ export function dealCards(sc: SocketType, socketId: string, cards: CardProps[], 
 }
 
 // 游戏开始，给所有玩家发牌
-export function dealCardsToPlayers(io: ServerType, roomCode: string, gameCards: CardProps[]) {
+export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
   io.sockets.in(roomCode).allSockets().then((res) => {
     for (const id of res) {
       io.to(id).emit('GAME_IS_START', {
         message: '游戏开始啦',
         data: {
-          userCards: getSpecifiedCards(gameCards, 7)
+          roomInfo,
+          userCards: getSpecifiedCards(roomInfo.gameCards, InitCardNum)
         },
         type: 'GAME_IS_START'
       })
+
     }
   })
+}
+
+export function updateRoomInfo(roomInfo:RoomInfo){
+    // 生成游戏卡牌
+    roomInfo.gameCards = useCards();
+    roomInfo.players.forEach((item)=>{
+      item.cardNum = InitCardNum;
+      item.lastCard = null
+    })
+    roomInfo.createTime = Date.now()
 }

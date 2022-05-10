@@ -17,7 +17,7 @@ declare type RoomInfo = RoomData & {
     [key: string]: CardProps[]
   };
   players:PlayerInfo[];
-  order: string[];
+  order: number;
   winnerOrder: string[];
   createTime: number;
   startTime: number;

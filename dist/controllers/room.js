@@ -17,15 +17,14 @@ const roomControllers = {
         };
     },
     JOIN_ROOM: (data, sc, io) => {
-        const { roomCode, playerInfo } = data;
+        const { roomCode, userInfo } = data;
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (roomInfo) {
-            // const key = `${playerInfo.id}${playerInfo.name}`;
-            roomInfo.players.push(Object.assign(Object.assign({}, playerInfo), { socketId: sc.id }));
+            roomInfo.players.push((0, room_1.createPlayer)(userInfo, sc.id));
             // 加入频道
             sc.join(roomCode);
             // 触发其他客户端更新玩家列表
-            (0, room_1.updatePlayerListToPlayers)(io, roomCode, roomInfo.players, '有玩家进入');
+            (0, room_1.updatePlayerListToPlayers)(io, roomCode, roomInfo.players, `玩家${userInfo.name}进入`);
             return {
                 message: '加入房间成功',
                 data: roomInfo,
@@ -39,18 +38,12 @@ const roomControllers = {
         };
     },
     START_GAME: (code, sc, io) => {
-        const genGameCards = (0, room_1.useCards)();
         const roomInfo = room_1.roomCollection.get(code);
         if (roomInfo) {
-            // 生成游戏卡牌
-            roomInfo.gameCards = genGameCards;
+            // 更新roomInfo
+            (0, room_1.updateRoomInfo)(roomInfo);
             // 给所有玩家发牌
-            (0, room_1.dealCardsToPlayers)(io, code, genGameCards);
-            return {
-                message: '游戏开始',
-                data: null,
-                type: 'RES_START_GAME'
-            };
+            (0, room_1.dealCardsToPlayers)(io, code, roomInfo);
         }
         // 房间code有误
         return {
@@ -81,7 +74,7 @@ const roomControllers = {
     },
     DISSOLVE_ROOM: (data, sc, io) => {
         const code = data;
-        (0, room_1.emitOtherPlayers)(io, code, 'RES_DISSOLVE_ROOM', {
+        (0, room_1.emitAllPlayers)(io, code, 'RES_DISSOLVE_ROOM', {
             message: '房间已解散',
             data: null,
             type: 'RES_DISSOLVE_ROOM'

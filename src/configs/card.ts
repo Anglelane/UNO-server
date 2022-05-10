@@ -44,3 +44,5 @@ export const cardInfomation = () => [
     color: '#9a9a9a',
   }),
 ]
+
+export const InitCardNum = 7
