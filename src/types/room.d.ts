@@ -4,11 +4,13 @@ declare interface RoomData {
   owner: PlayerInfo;
 }
 
-declare type PlayerInfo = UserInfo
+declare interface PlayerInfo extends UserInfo {
+  socketId:string
+}
 
 declare type RoomInfo = RoomData & {
   roomCode:string;
-  gameCard: CardProps[];
+  gameCards: CardProps[];
   userCards: {
     [key: string]: CardProps[]
   };

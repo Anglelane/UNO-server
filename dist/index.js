@@ -13,20 +13,25 @@ const io = new socket_io_1.Server(httpServer, {
     serveClient: false,
 });
 io.on('connection', (socket) => {
-    console.log('连接成功');
+    console.log(`${socket.id}:连接成功`);
     Object.keys(controllers_1.default).forEach((key) => {
         socket.on(key, (args) => {
             console.log(key, ':', args);
             if (args) {
                 const { type, data } = args;
                 const res = controllers_1.default[type](data, socket, io);
-                console.log(type, ':', res);
-                socket.emit(res.type, res);
+                if (res) {
+                    console.log(res.type, ':', res);
+                    socket.emit(res.type, res);
+                }
             }
         });
     });
     socket.on('error', (error) => {
         console.error('error:', error);
+    });
+    socket.on('disconnect', () => {
+        console.log(`${socket.id}:断开连接`);
     });
 });
 httpServer.listen(3000);

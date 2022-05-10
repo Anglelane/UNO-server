@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.randomCoding = void 0;
+exports.shuffle = exports.randomCoding = void 0;
 function randomCoding() {
     let result = [];
     let n = 5; //这个值可以改变的，对应的生成多少个字母，根据自己需求所改
@@ -14,3 +14,13 @@ function randomCoding() {
     return result.join('');
 }
 exports.randomCoding = randomCoding;
+const shuffle = (arr) => {
+    let len = arr.length;
+    let random;
+    while (len !== 0) {
+        random = (Math.random() * len--) >>> 0; // 无符号右移位运算符向下取整(注意这里必须加分号，否则报错)
+        [arr[len], arr[random]] = [arr[random], arr[len]]; // ES6的结构赋值实现变量互换
+    }
+    return arr;
+};
+exports.shuffle = shuffle;
