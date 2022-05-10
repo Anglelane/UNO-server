@@ -1,6 +1,6 @@
 import type { Controllers, ClientRoomKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
-import { createRoom, dealCardsToPlayers, emitOtherPlayers, roomCollection, updatePlayerListToPlayers, useCards } from '../services/room';
+import { createPlayer, createRoom, dealCardsToPlayers, emitOtherPlayers, roomCollection, updatePlayerListToPlayers, useCards } from '../services/room';
 import { randomCoding } from '../utils';
 import { get, set } from '../utils/customCRUD';
 
@@ -19,14 +19,10 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
     };
   },
   JOIN_ROOM: (data, sc, io) => {
-    const { roomCode, playerInfo } = data;
+    const { roomCode, userInfo } = data;
     const roomInfo = get(roomCollection, roomCode) as RoomInfo;
     if (roomInfo) {
-      // const key = `${playerInfo.id}${playerInfo.name}`;
-      roomInfo.players.push({
-        ...playerInfo,
-        socketId: sc.id
-      });
+      roomInfo.players.push(createPlayer(userInfo, sc.id));
       // 加入频道
       sc.join(roomCode);
       // 触发其他客户端更新玩家列表
@@ -44,13 +40,14 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
     };
   },
   START_GAME: (code: string, sc, io) => {
-    const genGameCards = useCards()
     const roomInfo = roomCollection.get(code)
     if (roomInfo) {
+    const genGameCards = useCards()
       // 生成游戏卡牌
       roomInfo.gameCards = genGameCards;
       // 给所有玩家发牌
       dealCardsToPlayers(io, code, genGameCards)
+      roomInfo.createTime = Date.now()
       return {
         message: '游戏开始',
         data: null,
