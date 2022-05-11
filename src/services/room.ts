@@ -1,13 +1,13 @@
-import { cardInfomation, InitCardNum } from "../configs/card";
-import { shuffle } from "../utils";
+import {  InitCardNum } from "../configs/card";
 import type { ServerType, SocketType } from "..";
 import type { ServerDataType, ServerKeys } from "~/types/server";
+import { useCards } from "./game";
 
 export const roomCollection = new Map<string, RoomInfo>();
 
 export function createRoom(args: any, sc: SocketType, code: string): any {
   let { roomId, roomName, owner } = args;
-  owner = createPlayer(owner,code);
+  owner = createPlayer(owner,sc.id);
   const newLocal: RoomInfo = {
     roomId,
     roomName,
@@ -17,6 +17,7 @@ export function createRoom(args: any, sc: SocketType, code: string): any {
     gameCards: [],
     userCards: {},
     order: 0,
+    lastCard:null,
     winnerOrder: [],
     createTime: Date.now(),
     startTime: -1,
@@ -32,6 +33,7 @@ export function createPlayer(userInfo: UserInfo, socketId: string): PlayerInfo {
     ...userInfo,
     socketId,
     cardNum: 0,
+    cards:null,
     lastCard: null
   }
 }
@@ -41,6 +43,7 @@ export function emitAllPlayers(io: ServerType, roomCode: string, event: ServerKe
   io.sockets.in(roomCode).emit(event, data as any)
 }
 
+// 更新玩家列表
 export function updatePlayerListToPlayers(io: ServerType, roomCode: string, players: PlayerInfo[], message: string) {
   emitAllPlayers(io, roomCode, 'UPDATE_PLAYER_LIST', {
     message,
@@ -49,50 +52,9 @@ export function updatePlayerListToPlayers(io: ServerType, roomCode: string, play
   })
 }
 
-// 生成游戏卡牌
-export const useCards = () => {
-  return shuffle(cardInfomation())
-}
 
-// 获取指定数量的牌
-function getSpecifiedCards(cards: CardProps[], num: number) {
-  let res = [];
-  for (let i = 0; i < num; i++) {
-    if (cards.length < num) {
-      // 牌不够了，补牌
-      cards = cards.concat(useCards());
-    }
-    let card = cards.shift();
-    res.push(card);
-  }
-  return res as CardProps[];
-}
-// 给指定玩家发指定数量的牌
-export function dealCards(sc: SocketType, socketId: string, cards: CardProps[], num: number) {
-  sc.to(socketId).emit('DEAL_CARDS', {
-    message: '拿到卡牌',
-    data: getSpecifiedCards(cards, num),
-    type: 'RES_DEAL_CARDS'
-  })
-}
 
-// 游戏开始，给所有玩家发牌
-export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
-  io.sockets.in(roomCode).allSockets().then((res) => {
-    for (const id of res) {
-      io.to(id).emit('GAME_IS_START', {
-        message: '游戏开始啦',
-        data: {
-          roomInfo,
-          userCards: getSpecifiedCards(roomInfo.gameCards, InitCardNum)
-        },
-        type: 'GAME_IS_START'
-      })
-
-    }
-  })
-}
-
+// 更新房间信息
 export function updateRoomInfo(roomInfo:RoomInfo){
     // 生成游戏卡牌
     roomInfo.gameCards = useCards();

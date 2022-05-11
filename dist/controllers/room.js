@@ -37,24 +37,9 @@ const roomControllers = {
             type: 'RES_JOIN_ROOM',
         };
     },
-    START_GAME: (code, sc, io) => {
-        const roomInfo = room_1.roomCollection.get(code);
-        if (roomInfo) {
-            // 更新roomInfo
-            (0, room_1.updateRoomInfo)(roomInfo);
-            // 给所有玩家发牌
-            (0, room_1.dealCardsToPlayers)(io, code, roomInfo);
-        }
-        // 房间code有误
-        return {
-            message: '房间不存在',
-            data: {},
-            type: 'RES_START_GAME'
-        };
-    },
     LEAVE_ROOM: (data, sc, io) => {
         const { roomCode: code, userInfo } = data;
-        const roomInfo = room_1.roomCollection.get(code);
+        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, code);
         if (roomInfo) {
             const idx = roomInfo.players.findIndex((item) => item.id === userInfo.id && item.name === item.name);
             roomInfo.players = roomInfo.players.splice(idx, 1);
@@ -79,7 +64,7 @@ const roomControllers = {
             data: null,
             type: 'RES_DISSOLVE_ROOM'
         });
-        room_1.roomCollection.delete(code);
+        (0, customCRUD_1.deleteKey)(room_1.roomCollection, code);
         io.socketsLeave(code);
         return {
             message: '房间已解散',

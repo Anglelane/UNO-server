@@ -1,15 +1,14 @@
 import type { Controllers, ClientRoomKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
-import { createPlayer, createRoom, dealCardsToPlayers, emitAllPlayers, roomCollection, updatePlayerListToPlayers, updateRoomInfo } from '../services/room';
+import { createPlayer, createRoom, emitAllPlayers, roomCollection, updatePlayerListToPlayers } from '../services/room';
 import { randomCoding } from '../utils';
-import { get, set } from '../utils/customCRUD';
+import { deleteKey, get, set } from '../utils/customCRUD';
 
 const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
   CREATE_ROOM: (data, sc, io) => {
     const code = randomCoding();
     // 创建频道
     sc.join(code);
-
     let roomInfo: any;
     set(roomCollection, code, (roomInfo = createRoom(data, sc, code)));
     return {
@@ -39,24 +38,9 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
       type: 'RES_JOIN_ROOM',
     };
   },
-  START_GAME: (code: string, sc, io) => {
-    const roomInfo = roomCollection.get(code)
-    if (roomInfo) {
-      // 更新roomInfo
-      updateRoomInfo(roomInfo)
-      // 给所有玩家发牌
-      dealCardsToPlayers(io, code, roomInfo)
-    }
-    // 房间code有误
-    return {
-      message: '房间不存在',
-      data: {},
-      type: 'RES_START_GAME'
-    }
-  },
   LEAVE_ROOM: (data, sc, io) => {
     const { roomCode: code, userInfo } = data
-    const roomInfo = roomCollection.get(code);
+    const roomInfo = get(roomCollection,code);
     if (roomInfo) {
       const idx = roomInfo.players.findIndex((item) => item.id === userInfo.id && item.name === item.name)
       roomInfo.players = roomInfo.players.splice(idx, 1)
@@ -81,7 +65,7 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
       data: null,
       type: 'RES_DISSOLVE_ROOM'
     })
-    roomCollection.delete(code)
+    deleteKey(roomCollection,code)
     io.socketsLeave(code);
     return {
       message: '房间已解散',
