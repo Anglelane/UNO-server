@@ -8,17 +8,19 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
   START_GAME: (roomCode: string, sc, io) => {
     const roomInfo = get(roomCollection, roomCode)
     if (roomInfo) {
+      if(roomInfo.players.length < 2){
+        return{
+          message: '当前人数不足两人，无法开始游戏',
+          data: null,
+          type: 'RES_START_GAME'
+        }
+      }
       // 更新roomInfo
       updateRoomInfoAtStart(roomInfo)
       // 给所有玩家发牌
       dealCardsToPlayers(io, roomCode, roomInfo)
       // 进入第一轮
       emitToNextTurn(io, roomCode, roomInfo);
-      return {
-        message: '成功开始游戏',
-        data: null,
-        type: 'RES_START_GAME'
-      };
     }
     // 房间code有误
     return {

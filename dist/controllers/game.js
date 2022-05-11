@@ -7,6 +7,13 @@ const gameControllers = {
     START_GAME: (roomCode, sc, io) => {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (roomInfo) {
+            if (roomInfo.players.length < 2) {
+                return {
+                    message: '当前人数不足两人，无法开始游戏',
+                    data: null,
+                    type: 'RES_START_GAME'
+                };
+            }
             // 更新roomInfo
             (0, room_1.updateRoomInfoAtStart)(roomInfo);
             // 给所有玩家发牌
