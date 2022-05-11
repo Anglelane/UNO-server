@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.useCards = void 0;
+exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.useCards = void 0;
 const card_1 = require("../configs/card");
 const utils_1 = require("../utils");
 const room_1 = require("./room");
@@ -82,3 +82,17 @@ function emitToNextTurn(io, roomCode, roomInfo) {
     }
 }
 exports.emitToNextTurn = emitToNextTurn;
+// 通知玩家游戏结束
+function emitGameOver(roomInfo, io, roomCode) {
+    (0, room_1.updateRoomInfoAtEnd)(roomInfo);
+    // 通知玩家游戏结束
+    (0, room_1.emitAllPlayers)(io, roomCode, 'GAME_IS_OVER', {
+        type: 'GAME_IS_OVER',
+        message: '游戏结束',
+        data: {
+            winnerOrder: roomInfo.winnerOrder,
+            endTime: roomInfo.endTime
+        }
+    });
+}
+exports.emitGameOver = emitGameOver;

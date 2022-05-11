@@ -39,16 +39,7 @@ const gameControllers = {
                 if ((res === null || res === void 0 ? void 0 : res.length) === 0) {
                     // 有玩家牌全部用完了，则应该结束游戏
                     // 更新房间信息
-                    (0, room_1.updateRoomInfoAtEnd)(roomInfo);
-                    // 通知玩家游戏结束
-                    (0, room_1.emitAllPlayers)(io, roomCode, 'GAME_IS_OVER', {
-                        type: 'GAME_IS_OVER',
-                        message: '游戏结束',
-                        data: {
-                            winnerOrder: roomInfo.winnerOrder,
-                            endTime: roomInfo.endTime
-                        }
-                    });
+                    (0, game_1.emitGameOver)(roomInfo, io, roomCode);
                     return {
                         message: '恭喜你赢得游戏',
                         data: null,

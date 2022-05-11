@@ -46,6 +46,10 @@ const roomControllers = {
             roomInfo.players = roomInfo.players.splice(idx, 1);
             sc.leave(roomCode);
             (0, room_1.updatePlayerListToPlayers)(io, roomCode, roomInfo.players, `玩家${userInfo.name}离开房间`);
+            if (roomInfo.players.length < 2) {
+                // 如果当前只剩1人，直接结束游戏
+                (0, game_1.emitGameOver)(roomInfo, io, roomCode);
+            }
             // 如果轮到该玩家发牌，还原顺序（-1）,重新进入下一轮
             if (roomInfo.status === 'GAMING' && idx === roomInfo.order) {
                 roomInfo.order--;
