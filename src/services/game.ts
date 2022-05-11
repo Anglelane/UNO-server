@@ -38,7 +38,7 @@ export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: R
     for (const id of res) {
       const player = roomInfo.players.find((p) => p.socketId === id);
       console.log('player:', player)
-      if(player){
+      if (player) {
         const userCards = (player.cards = getSpecifiedCards(roomInfo.gameCards, InitCardNum))
         io.to(id).emit('GAME_IS_START', {
           message: '游戏开始啦',
@@ -55,15 +55,15 @@ export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: R
 
 // 更新玩家卡牌信息
 export function updatePlayerCardInfo(player: PlayerInfo, cardsIndex: number[], roomInfo: RoomInfo) {
-    cardsIndex.forEach((i)=>{
-      const deleteCard = player.cards?.splice(i,1);
-      player.cardNum--;
-      player.lastCard = { ...deleteCard![0] };
-      roomInfo.lastCard = { ...deleteCard![0] };
-    })
-    roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
-    return player.cards;
-  }
+  cardsIndex.forEach((i) => {
+    const deleteCard = player.cards?.splice(i, 1);
+    player.cardNum--;
+    player.lastCard = { ...deleteCard![0] };
+    roomInfo.lastCard = { ...deleteCard![0] };
+  })
+  roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
+  return player.cards;
+}
 
 // 通知玩家进入下一轮
 export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
@@ -82,7 +82,7 @@ export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomI
 }
 
 // 通知玩家游戏结束
-export function emitGameOver(roomInfo: RoomInfo, io:ServerType, roomCode: string) {
+export function emitGameOver(roomInfo: RoomInfo, io: ServerType, roomCode: string) {
   updateRoomInfoAtEnd(roomInfo);
   // 通知玩家游戏结束
   emitAllPlayers(io, roomCode, 'GAME_IS_OVER', {
@@ -93,4 +93,34 @@ export function emitGameOver(roomInfo: RoomInfo, io:ServerType, roomCode: string
       endTime: roomInfo.endTime
     }
   });
+}
+
+// 检测玩家卡牌
+export function checkCards(cards: CardProps[], cardsIndex: number[], lastCard: CardProps | null): boolean {
+  // for (let i = 0; i < cardsIndex.length; i++) {
+  //   const target = cards[i];
+  //   if (!checkCard(target, lastCard)) {
+  //     return false;
+  //   }
+  // }
+  const target = cards[cardsIndex[0]];
+  return checkCard(target,lastCard)
+}
+
+// 检查单张卡牌
+function checkCard(target: CardProps, lastCard: CardProps | null): boolean {
+  if(!lastCard || isUniversalCard(target)) return true;
+  return isSameColor(target,lastCard) || isSameType(target,lastCard);
+}
+
+function isSameColor(target: CardProps, lastCard: CardProps) {
+  return target.color === lastCard.color
+}
+
+function isSameType(target: CardProps, lastCard: CardProps) {
+  return target.type === lastCard.type
+}
+
+function isUniversalCard(target:CardProps){
+  return target.type === 'palette' || target.type === 'add-4';
 }

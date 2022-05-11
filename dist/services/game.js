@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.useCards = void 0;
+exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.useCards = void 0;
 const card_1 = require("../configs/card");
 const utils_1 = require("../utils");
 const room_1 = require("./room");
@@ -96,3 +96,32 @@ function emitGameOver(roomInfo, io, roomCode) {
     });
 }
 exports.emitGameOver = emitGameOver;
+// 检测玩家卡牌
+function checkCards(cards, cardsIndex, lastCard) {
+    if (!lastCard)
+        return true;
+    // for (let i = 0; i < cardsIndex.length; i++) {
+    //   const target = cards[i];
+    //   if (!checkCard(target, lastCard)) {
+    //     return false;
+    //   }
+    // }
+    const target = cards[cardsIndex[0]];
+    return checkCard(target, lastCard);
+}
+exports.checkCards = checkCards;
+// 检查单张卡牌
+function checkCard(target, lastCard) {
+    if (isUniversalCard(target))
+        return true;
+    return isSameColor(target, lastCard) || isSameType(target, lastCard);
+}
+function isSameColor(target, lastCard) {
+    return target.color === lastCard.color;
+}
+function isSameType(target, lastCard) {
+    return target.type === lastCard.type;
+}
+function isUniversalCard(target) {
+    return target.type === 'palette' || target.type === 'add-4';
+}

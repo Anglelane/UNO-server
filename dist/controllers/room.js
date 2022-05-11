@@ -65,7 +65,7 @@ const roomControllers = {
             }
             else {
                 (0, room_1.updatePlayerListToPlayers)(io, roomCode, roomInfo.players, `玩家 ${userInfo.name} 离开房间`);
-                // 如果轮到该玩家发牌，还原顺序（-1）,重新进入下一轮
+                // 如果轮到该玩家发牌,重新进入下一轮
                 if (roomInfo.status === 'GAMING' && idx === roomInfo.order) {
                     (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
                 }
