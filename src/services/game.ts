@@ -1,7 +1,7 @@
 import { cardInfomation, InitCardNum } from "../configs/card";
 import { shuffle } from "../utils";
 import { ServerType, SocketType } from "..";
-import { emitAllPlayers } from "./room";
+import { emitAllPlayers, updateRoomInfoAtEnd } from "./room";
 
 let playOrder = 1;
 
@@ -65,6 +65,7 @@ export function updatePlayerCardInfo(player: PlayerInfo, cardsIndex: number[], r
     return player.cards;
   }
 
+// 通知玩家进入下一轮
 export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
   const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
   if (nextPlayer) {
@@ -78,4 +79,18 @@ export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomI
       }
     })
   }
+}
+
+// 通知玩家游戏结束
+export function emitGameOver(roomInfo: RoomInfo, io:ServerType, roomCode: string) {
+  updateRoomInfoAtEnd(roomInfo);
+  // 通知玩家游戏结束
+  emitAllPlayers(io, roomCode, 'GAME_IS_OVER', {
+    type: 'GAME_IS_OVER',
+    message: '游戏结束',
+    data: {
+      winnerOrder: roomInfo.winnerOrder,
+      endTime: roomInfo.endTime
+    }
+  });
 }

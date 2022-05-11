@@ -66,6 +66,7 @@ function updatePlayerCardInfo(player, cardsIndex, roomInfo) {
     return player.cards;
 }
 exports.updatePlayerCardInfo = updatePlayerCardInfo;
+// 通知玩家进入下一轮
 function emitToNextTurn(io, roomCode, roomInfo) {
     const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
     if (nextPlayer) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateRoomInfo = exports.updatePlayerListToPlayers = exports.emitAllPlayers = exports.createPlayer = exports.createRoom = exports.roomCollection = void 0;
+exports.updateRoomInfoAtEnd = exports.updateRoomInfoAtStart = exports.updatePlayerListToPlayers = exports.emitAllPlayers = exports.createPlayer = exports.createRoom = exports.roomCollection = void 0;
 const card_1 = require("../configs/card");
 const game_1 = require("./game");
 exports.roomCollection = new Map();
@@ -16,6 +16,7 @@ function createRoom(args, sc, code) {
         gameCards: [],
         userCards: {},
         order: 0,
+        status: 'WAITING',
         lastCard: null,
         winnerOrder: [],
         createTime: Date.now(),
@@ -45,8 +46,8 @@ function updatePlayerListToPlayers(io, roomCode, players, message) {
     });
 }
 exports.updatePlayerListToPlayers = updatePlayerListToPlayers;
-// 更新房间信息
-function updateRoomInfo(roomInfo) {
+// 开始游戏，更新房间信息
+function updateRoomInfoAtStart(roomInfo) {
     // 生成游戏卡牌
     roomInfo.gameCards = (0, game_1.useCards)();
     roomInfo.players.forEach((item) => {
@@ -54,5 +55,13 @@ function updateRoomInfo(roomInfo) {
         item.lastCard = null;
     });
     roomInfo.createTime = Date.now();
+    roomInfo.status = 'GAMING';
 }
-exports.updateRoomInfo = updateRoomInfo;
+exports.updateRoomInfoAtStart = updateRoomInfoAtStart;
+// 游戏结束，更新房间信息
+function updateRoomInfoAtEnd(roomInfo) {
+    roomInfo.endTime = Date.now();
+    roomInfo.winnerOrder = roomInfo.players.sort((a, b) => a.cardNum - b.cardNum);
+    roomInfo.status = 'END';
+}
+exports.updateRoomInfoAtEnd = updateRoomInfoAtEnd;

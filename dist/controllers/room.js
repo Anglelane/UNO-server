@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const game_1 = require("../services/game");
 const room_1 = require("../services/room");
 const utils_1 = require("../utils");
 const customCRUD_1 = require("../utils/customCRUD");
@@ -38,13 +39,18 @@ const roomControllers = {
         };
     },
     LEAVE_ROOM: (data, sc, io) => {
-        const { roomCode: code, userInfo } = data;
-        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, code);
+        const { roomCode, userInfo } = data;
+        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (roomInfo) {
-            const idx = roomInfo.players.findIndex((item) => item.id === userInfo.id && item.name === item.name);
+            const idx = roomInfo.players.findIndex((item) => item.socketId === sc.id);
             roomInfo.players = roomInfo.players.splice(idx, 1);
-            sc.leave(code);
-            (0, room_1.updatePlayerListToPlayers)(io, code, roomInfo.players, `玩家${userInfo.name}离开房间`);
+            sc.leave(roomCode);
+            (0, room_1.updatePlayerListToPlayers)(io, roomCode, roomInfo.players, `玩家${userInfo.name}离开房间`);
+            // 如果轮到该玩家发牌，还原顺序（-1）,重新进入下一轮
+            if (roomInfo.status === 'GAMING' && idx === roomInfo.order) {
+                roomInfo.order--;
+                (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
+            }
             return {
                 'message': '您已离开房间',
                 data: null,

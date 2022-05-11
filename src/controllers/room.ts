@@ -1,3 +1,4 @@
+import { emitGameOver, emitToNextTurn } from '../services/game';
 import type { Controllers, ClientRoomKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import { createPlayer, createRoom, emitAllPlayers, roomCollection, updatePlayerListToPlayers } from '../services/room';
@@ -39,13 +40,22 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
     };
   },
   LEAVE_ROOM: (data, sc, io) => {
-    const { roomCode: code, userInfo } = data
-    const roomInfo = get(roomCollection,code);
+    const { roomCode, userInfo } = data
+    const roomInfo = get(roomCollection,roomCode);
     if (roomInfo) {
-      const idx = roomInfo.players.findIndex((item) => item.id === userInfo.id && item.name === item.name)
+      const idx = roomInfo.players.findIndex((item) => item.socketId === sc.id)
       roomInfo.players = roomInfo.players.splice(idx, 1)
-      sc.leave(code);
-      updatePlayerListToPlayers(io, code, roomInfo.players, `玩家${userInfo.name}离开房间`)
+      sc.leave(roomCode);
+      updatePlayerListToPlayers(io, roomCode, roomInfo.players, `玩家${userInfo.name}离开房间`)
+      if(roomInfo.players.length < 2){
+        // 如果当前只剩1人，直接结束游戏
+        emitGameOver(roomInfo,io,roomCode)
+      }
+      // 如果轮到该玩家发牌，还原顺序（-1）,重新进入下一轮
+      if(roomInfo.status ==='GAMING' && idx === roomInfo.order) {
+        roomInfo.order--;
+        emitToNextTurn(io,roomCode,roomInfo)
+      }
       return {
         'message': '您已离开房间',
         data: null,

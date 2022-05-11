@@ -20,7 +20,8 @@ declare type RoomInfo = RoomData & {
   lastCard:CardProps | null;
   players:PlayerInfo[];
   order: number;
-  winnerOrder: string[];
+  status:'WAITING'|'GAMING'|'END'
+  winnerOrder: PlayerInfo[];
   createTime: number;
   startTime: number;
   endTime: number;

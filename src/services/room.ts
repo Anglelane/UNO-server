@@ -17,6 +17,7 @@ export function createRoom(args: any, sc: SocketType, code: string): any {
     gameCards: [],
     userCards: {},
     order: 0,
+    status:'WAITING',
     lastCard:null,
     winnerOrder: [],
     createTime: Date.now(),
@@ -54,13 +55,21 @@ export function updatePlayerListToPlayers(io: ServerType, roomCode: string, play
 
 
 
-// 更新房间信息
-export function updateRoomInfo(roomInfo:RoomInfo){
+// 开始游戏，更新房间信息
+export function updateRoomInfoAtStart(roomInfo:RoomInfo){
     // 生成游戏卡牌
     roomInfo.gameCards = useCards();
     roomInfo.players.forEach((item)=>{
       item.cardNum = InitCardNum;
       item.lastCard = null
     })
-    roomInfo.createTime = Date.now()
+    roomInfo.createTime = Date.now();
+    roomInfo.status='GAMING'
+}
+
+// 游戏结束，更新房间信息
+export function updateRoomInfoAtEnd(roomInfo:RoomInfo){
+  roomInfo.endTime = Date.now();
+  roomInfo.winnerOrder = roomInfo.players.sort((a,b)=>a.cardNum - b.cardNum);
+  roomInfo.status = 'END'
 }
