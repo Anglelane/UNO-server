@@ -11,7 +11,7 @@ export const useCards = () => {
 }
 
 // 获取指定数量的牌
-function getSpecifiedCards(cards: CardProps[], num: number) {
+export function getSpecifiedCards(cards: CardProps[], num: number) {
   let res = [];
   for (let i = 0; i < num; i++) {
     if (cards.length < num) {
@@ -26,7 +26,7 @@ function getSpecifiedCards(cards: CardProps[], num: number) {
 // 给指定玩家发指定数量的牌
 export function dealCards(sc: SocketType, socketId: string, cards: CardProps[], num: number) {
   sc.to(socketId).emit('DEAL_CARDS', {
-    message: '拿到卡牌',
+    message: `获得卡牌 ${num} 张`,
     data: getSpecifiedCards(cards, num),
     type: 'RES_DEAL_CARDS'
   })
@@ -61,12 +61,12 @@ export function updatePlayerCardInfo(player: PlayerInfo, cardsIndex: number[], r
     player.lastCard = { ...deleteCard![0] };
     roomInfo.lastCard = { ...deleteCard![0] };
   })
-  roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
   return player.cards;
 }
 
 // 通知玩家进入下一轮
 export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
+  roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
   const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
   if (nextPlayer) {
     emitAllPlayers(io, roomCode, 'NEXT_TURN', {

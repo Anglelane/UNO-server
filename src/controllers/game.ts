@@ -2,7 +2,7 @@ import { roomCollection, updateRoomInfoAtStart } from '../services/room';
 import type { Controllers, ClientGameKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import { get } from '../utils/customCRUD';
-import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, updatePlayerCardInfo } from '../services/game';
+import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, getSpecifiedCards, updatePlayerCardInfo } from '../services/game';
 
 const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
   START_GAME: (roomCode: string, sc, io) => {
@@ -79,6 +79,44 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
         type: 'RES_OUT_OF_THE_CARD'
       }
     }
+  },
+  'GET_ONE_CARD':(roomCode,sc,io)=>{
+    const roomInfo = get(roomCollection,roomCode);
+    if(!roomInfo)
+      return {
+        message: '房间不存在',
+        data: null,
+        type: 'RES_GET_ONE_CARD'
+      }
+    const player = roomInfo.players.find((item) => item.socketId === sc.id);
+    if (!player)
+      return {
+        message: '玩家不存在',
+        data: null,
+        type: 'RES_GET_ONE_CARD'
+      }
+    const card = getSpecifiedCards(roomInfo.gameCards,1);
+    player.cards?.push(...card)
+    player.cardNum++;
+    return{
+      data:{
+        userCards:player.cards,
+        card:card[0]
+      },
+      type:'RES_GET_ONE_CARD'
+    }
+  },
+  NEXT_TURN:(roomCode,sc,io)=>{
+    const roomInfo = get(roomCollection,roomCode);
+    if(!roomInfo){
+      return {
+        message: '房间不存在',
+        data: null,
+        type: 'RES_NEXT_TURN'
+      }
+    }
+    // 通知所有玩家进入下一轮，更新客户端信息
+    emitToNextTurn(io, roomCode, roomInfo);
   }
 };
 

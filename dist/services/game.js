@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.useCards = void 0;
+exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.getSpecifiedCards = exports.useCards = void 0;
 const card_1 = require("../configs/card");
 const utils_1 = require("../utils");
 const room_1 = require("./room");
@@ -23,10 +23,11 @@ function getSpecifiedCards(cards, num) {
     }
     return res;
 }
+exports.getSpecifiedCards = getSpecifiedCards;
 // 给指定玩家发指定数量的牌
 function dealCards(sc, socketId, cards, num) {
     sc.to(socketId).emit('DEAL_CARDS', {
-        message: '拿到卡牌',
+        message: `获得卡牌 ${num} 张`,
         data: getSpecifiedCards(cards, num),
         type: 'RES_DEAL_CARDS'
     });
@@ -62,12 +63,12 @@ function updatePlayerCardInfo(player, cardsIndex, roomInfo) {
         player.lastCard = Object.assign({}, deleteCard[0]);
         roomInfo.lastCard = Object.assign({}, deleteCard[0]);
     });
-    roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
     return player.cards;
 }
 exports.updatePlayerCardInfo = updatePlayerCardInfo;
 // 通知玩家进入下一轮
 function emitToNextTurn(io, roomCode, roomInfo) {
+    roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
     const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
     if (nextPlayer) {
         (0, room_1.emitAllPlayers)(io, roomCode, 'NEXT_TURN', {
@@ -98,8 +99,6 @@ function emitGameOver(roomInfo, io, roomCode) {
 exports.emitGameOver = emitGameOver;
 // 检测玩家卡牌
 function checkCards(cards, cardsIndex, lastCard) {
-    if (!lastCard)
-        return true;
     // for (let i = 0; i < cardsIndex.length; i++) {
     //   const target = cards[i];
     //   if (!checkCard(target, lastCard)) {
@@ -112,7 +111,7 @@ function checkCards(cards, cardsIndex, lastCard) {
 exports.checkCards = checkCards;
 // 检查单张卡牌
 function checkCard(target, lastCard) {
-    if (isUniversalCard(target))
+    if (!lastCard || isUniversalCard(target))
         return true;
     return isSameColor(target, lastCard) || isSameType(target, lastCard);
 }

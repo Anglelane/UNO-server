@@ -79,6 +79,45 @@ const gameControllers = {
                 type: 'RES_OUT_OF_THE_CARD'
             };
         }
+    },
+    'GET_ONE_CARD': (roomCode, sc, io) => {
+        var _a;
+        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
+        if (!roomInfo)
+            return {
+                message: '房间不存在',
+                data: null,
+                type: 'RES_GET_ONE_CARD'
+            };
+        const player = roomInfo.players.find((item) => item.socketId === sc.id);
+        if (!player)
+            return {
+                message: '玩家不存在',
+                data: null,
+                type: 'RES_GET_ONE_CARD'
+            };
+        const card = (0, game_1.getSpecifiedCards)(roomInfo.gameCards, 1);
+        (_a = player.cards) === null || _a === void 0 ? void 0 : _a.push(...card);
+        player.cardNum++;
+        return {
+            data: {
+                userCards: player.cards,
+                card: card[0]
+            },
+            type: 'RES_GET_ONE_CARD'
+        };
+    },
+    NEXT_TURN: (roomCode, sc, io) => {
+        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
+        if (!roomInfo) {
+            return {
+                message: '房间不存在',
+                data: null,
+                type: 'RES_NEXT_TURN'
+            };
+        }
+        // 通知所有玩家进入下一轮，更新客户端信息
+        (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
     }
 };
 exports.default = gameControllers;
