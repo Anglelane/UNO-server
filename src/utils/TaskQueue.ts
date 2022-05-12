@@ -7,11 +7,11 @@ export class TaskQueue {
     if (typeof fn !== 'function') return;
     this.tasks.push(fn);
   }
-  exec() {
+  async exec() {
     const len = this.tasks.length;
     for (let i = 0; i < len; i++) {
       const task = this.tasks.shift();
-      task && task();
+      task && await task();
     }
   }
 }

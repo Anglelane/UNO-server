@@ -4,7 +4,11 @@
 //  const genFuncCard2 = ['palette', 'add-4'];
 
 
-const colorList = ['#FF6666', '#99CC66', '#99CCFF', '#FFCC33']
+export const colorList :{
+  [T in CardColor]:string
+}= {
+  '#FF6666':'红色' ,'#99CC66':'绿色', '#99CCFF':'蓝色', '#FFCC33':'黄色'
+}
 
 export const cardInfomation = () => [
   ...[...[...genArr0To9, ...genArr1To9].map((i) => {
@@ -26,7 +30,7 @@ export const cardInfomation = () => [
     type: 'add-2',
     icon: 'fa6-solid:clone',
   }]).flat()].map((item) => {
-    return colorList.map((color) => {
+    return Object.keys(colorList).map((color) => {
       return {
         ...item,
         color,

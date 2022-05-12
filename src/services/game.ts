@@ -94,13 +94,13 @@ export function emitGameOver(roomInfo: RoomInfo, io: ServerType, roomCode: strin
 }
 
 // 检测玩家卡牌
-export function checkCards(cards: CardInfo[], cardsIndex: number[], lastCard: CardInfo | null,tasks:TaskQueue,roomInfo:RoomInfo): boolean {
+export function checkCards(cards: CardInfo[], cardsIndex: number[], lastCard: CardInfo | null,tasks:TaskQueue,roomInfo:RoomInfo,io:ServerType,sc:SocketType): boolean {
   for (let i = 0; i < cardsIndex.length; i++) {
     const target = cards[cardsIndex[i]];
     if (!checkCard(target, lastCard)) {
       return false;
     }else{
-      tasks.addTask(handleCardByType(target,roomInfo));
+      tasks.addTask(handleCardByType(target,roomInfo,io,sc));
     }
   }
   return true
@@ -125,7 +125,7 @@ function isUniversalCard(target:CardInfo){
 }
 
 
-function handleCardByType(card:CardInfo,roomInfo:RoomInfo):Function {
+function handleCardByType(card:CardInfo,roomInfo:RoomInfo,io:ServerType,sc:SocketType):Function {
   let fn:Function;
   switch (card.type) {
     case 'exchange':
@@ -141,15 +141,29 @@ function handleCardByType(card:CardInfo,roomInfo:RoomInfo):Function {
       }
       break;
     case 'add-2':
-      fn = ()=>{}
+      fn = ()=>{
+
+      }
         // TODO 给对应玩家发出通知
       break;
     case 'add-4':
-      fn = ()=>{}
+      fn = ()=>{
+        io.to(sc.id).emit('SELECT_COLOR',{
+          message:'请选择颜色',
+          type:'SELECT_COLOR',
+          data:null
+        })
+      }
         // TODO 给对应玩家发出通知
       break;
     case 'palette':
-      fn = ()=>{}
+      fn = ()=>{
+        io.to(sc.id).emit('SELECT_COLOR',{
+            message:'请选择颜色',
+            type:'SELECT_COLOR',
+            data:null
+        })
+      }
         // TODO 给对应玩家发出通知
       break;
     default:

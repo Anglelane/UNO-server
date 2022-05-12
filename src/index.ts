@@ -2,7 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import controllers from './controllers';
-import type { ClientKeys, ClientToServerEvents, InterServerEvents, ServerToClientEvents } from './types/server';
+import type { ControllerKeys, ClientToServerEvents, InterServerEvents, ServerToClientEvents } from './types/server';
 
 const app = express();
 const httpServer = createServer(app);
@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
       console.log(key, ':', args);
       if(args){
         const { type, data } = args;
-        const res = controllers[type as ClientKeys](data, socket, io);
+        const res = controllers[type as ControllerKeys](data, socket, io);
         if(res){
           console.log(res.type, ':', res);
           socket.emit(res.type as any, res as any);

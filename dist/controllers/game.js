@@ -4,6 +4,7 @@ const room_1 = require("../services/room");
 const customCRUD_1 = require("../utils/customCRUD");
 const game_1 = require("../services/game");
 const utils_1 = require("../utils");
+const configs_1 = require("../configs");
 const gameControllers = {
     START_GAME: (roomCode, sc, io) => {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
@@ -52,7 +53,7 @@ const gameControllers = {
         // 新建任务队列
         const tasks = new utils_1.TaskQueue();
         // 判断牌的类型，做出操作
-        const stauts = (0, game_1.checkCards)(player.cards, cardsIndex, lastCard, tasks, roomInfo);
+        const stauts = (0, game_1.checkCards)(player.cards, cardsIndex, lastCard, tasks, roomInfo, io, sc);
         if (!stauts) {
             // 检测不通过
             return {
@@ -123,6 +124,23 @@ const gameControllers = {
         }
         // 通知所有玩家进入下一轮，更新客户端信息
         (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
+    },
+    'SUBMIT_COLOR': (data, sc, io) => {
+        const { color, roomCode } = data;
+        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
+        if (!roomInfo)
+            return {
+                message: '房间不存在',
+                data: null,
+                type: 'RES_NEXT_TURN'
+            };
+        roomInfo.lastCard.color = color;
+        // 更改房间颜色
+        (0, room_1.emitAllPlayers)(io, roomCode, 'COLOR_IS_CHANGE', {
+            message: '卡牌颜色更改为：' + configs_1.colorList[color],
+            type: 'COLOR_IS_CHANGE',
+            data: color
+        });
     }
 };
 exports.default = gameControllers;

@@ -1,10 +1,10 @@
-import type { ClientGameKeys, ClientRoomKeys, ClientUserKeys, Controllers } from '~/types/server';
+import type { ControllerKeys, Controllers } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import gameControllers from './game';
 import roomControllers from './room';
 import userControllers from './user';
 
-const controllers:Controllers<ClientRoomKeys | ClientUserKeys | ClientGameKeys, SocketType, ServerType> = {
+const controllers:Controllers<ControllerKeys, SocketType, ServerType> = {
   ...roomControllers,
   ...userControllers,
   ...gameControllers

@@ -1,9 +1,10 @@
-import { roomCollection, updateRoomInfoAtStart } from '../services/room';
+import { emitAllPlayers, roomCollection, updateRoomInfoAtStart } from '../services/room';
 import type { Controllers, ClientGameKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import { get } from '../utils/customCRUD';
 import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, getSpecifiedCards, updatePlayerCardInfo } from '../services/game';
 import { TaskQueue } from '../utils';
+import { colorList } from '../configs';
 
 const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
   START_GAME: (roomCode: string, sc, io) => {
@@ -53,7 +54,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
     // 新建任务队列
     const tasks = new TaskQueue();
     // 判断牌的类型，做出操作
-    const stauts = checkCards(player.cards!,cardsIndex,lastCard,tasks,roomInfo);
+    const stauts = checkCards(player.cards!,cardsIndex,lastCard,tasks,roomInfo,io,sc);
     if(!stauts){
       // 检测不通过
       return {
@@ -122,6 +123,22 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
     }
     // 通知所有玩家进入下一轮，更新客户端信息
     emitToNextTurn(io, roomCode, roomInfo);
+  },
+  'SUBMIT_COLOR':(data,sc,io)=>{
+    const {color,roomCode} = data;
+    const roomInfo = get(roomCollection,roomCode);
+    if(!roomInfo) return{
+      message: '房间不存在',
+        data: null,
+        type: 'RES_NEXT_TURN'
+    }
+    roomInfo.lastCard!.color = color;
+    // 更改房间颜色
+    emitAllPlayers(io,roomCode,'COLOR_IS_CHANGE',{
+      message:'卡牌颜色更改为：'+ colorList[color as CardColor],
+      type:'COLOR_IS_CHANGE',
+      data:color
+    })
   }
 };
 
