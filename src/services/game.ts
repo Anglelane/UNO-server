@@ -11,7 +11,7 @@ export const useCards = () => {
 }
 
 // 获取指定数量的牌
-export function getSpecifiedCards(cards: CardProps[], num: number) {
+export function getSpecifiedCards(cards: CardInfo[], num: number) {
   let res = [];
   for (let i = 0; i < num; i++) {
     if (cards.length < num) {
@@ -21,10 +21,10 @@ export function getSpecifiedCards(cards: CardProps[], num: number) {
     let card = cards.shift();
     res.push(card);
   }
-  return res as CardProps[];
+  return res as CardInfo[];
 }
 // 给指定玩家发指定数量的牌
-export function dealCards(sc: SocketType, socketId: string, cards: CardProps[], num: number) {
+export function dealCards(sc: SocketType, socketId: string, cards: CardInfo[], num: number) {
   sc.to(socketId).emit('DEAL_CARDS', {
     message: `获得卡牌 ${num} 张`,
     data: getSpecifiedCards(cards, num),
@@ -96,7 +96,7 @@ export function emitGameOver(roomInfo: RoomInfo, io: ServerType, roomCode: strin
 }
 
 // 检测玩家卡牌
-export function checkCards(cards: CardProps[], cardsIndex: number[], lastCard: CardProps | null): boolean {
+export function checkCards(cards: CardInfo[], cardsIndex: number[], lastCard: CardInfo | null): boolean {
   // for (let i = 0; i < cardsIndex.length; i++) {
   //   const target = cards[i];
   //   if (!checkCard(target, lastCard)) {
@@ -108,19 +108,19 @@ export function checkCards(cards: CardProps[], cardsIndex: number[], lastCard: C
 }
 
 // 检查单张卡牌
-function checkCard(target: CardProps, lastCard: CardProps | null): boolean {
+function checkCard(target: CardInfo, lastCard: CardInfo | null): boolean {
   if(!lastCard || isUniversalCard(target)) return true;
   return isSameColor(target,lastCard) || isSameType(target,lastCard);
 }
 
-function isSameColor(target: CardProps, lastCard: CardProps) {
+function isSameColor(target: CardInfo, lastCard: CardInfo) {
   return target.color === lastCard.color
 }
 
-function isSameType(target: CardProps, lastCard: CardProps) {
+function isSameType(target: CardInfo, lastCard: CardInfo) {
   return target.type === lastCard.type
 }
 
-function isUniversalCard(target:CardProps){
+function isUniversalCard(target:CardInfo){
   return target.type === 'palette' || target.type === 'add-4';
 }
