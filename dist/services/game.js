@@ -4,7 +4,6 @@ exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.upd
 const card_1 = require("../configs/card");
 const utils_1 = require("../utils");
 const room_1 = require("./room");
-let playOrder = 1;
 // 生成游戏卡牌
 const useCards = () => {
     return (0, utils_1.shuffle)((0, card_1.cardInfomation)());
@@ -68,7 +67,7 @@ function updatePlayerCardInfo(player, cardsIndex, roomInfo) {
 exports.updatePlayerCardInfo = updatePlayerCardInfo;
 // 通知玩家进入下一轮
 function emitToNextTurn(io, roomCode, roomInfo) {
-    roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
+    roomInfo.order = getNextOrder(roomInfo);
     const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
     if (nextPlayer) {
         (0, room_1.emitAllPlayers)(io, roomCode, 'NEXT_TURN', {
@@ -98,15 +97,17 @@ function emitGameOver(roomInfo, io, roomCode) {
 }
 exports.emitGameOver = emitGameOver;
 // 检测玩家卡牌
-function checkCards(cards, cardsIndex, lastCard) {
-    // for (let i = 0; i < cardsIndex.length; i++) {
-    //   const target = cards[i];
-    //   if (!checkCard(target, lastCard)) {
-    //     return false;
-    //   }
-    // }
-    const target = cards[cardsIndex[0]];
-    return checkCard(target, lastCard);
+function checkCards(cards, cardsIndex, lastCard, tasks, roomInfo) {
+    for (let i = 0; i < cardsIndex.length; i++) {
+        const target = cards[cardsIndex[i]];
+        if (!checkCard(target, lastCard)) {
+            return false;
+        }
+        else {
+            tasks.addTask(handleCardByType(target, roomInfo));
+        }
+    }
+    return true;
 }
 exports.checkCards = checkCards;
 // 检查单张卡牌
@@ -123,4 +124,40 @@ function isSameType(target, lastCard) {
 }
 function isUniversalCard(target) {
     return target.type === 'palette' || target.type === 'add-4';
+}
+function handleCardByType(card, roomInfo) {
+    let fn;
+    switch (card.type) {
+        case 'exchange':
+            fn = () => {
+                roomInfo.playOrder = roomInfo.playOrder === 1 ? -1 : 1;
+                // TODO 给全部玩家发出通知
+            };
+            break;
+        case 'ban':
+            fn = () => {
+                roomInfo.order = getNextOrder(roomInfo);
+                // TODO 给对应玩家发出通知
+            };
+            break;
+        case 'add-2':
+            fn = () => { };
+            // TODO 给对应玩家发出通知
+            break;
+        case 'add-4':
+            fn = () => { };
+            // TODO 给对应玩家发出通知
+            break;
+        case 'palette':
+            fn = () => { };
+            // TODO 给对应玩家发出通知
+            break;
+        default:
+            fn = () => { };
+            break;
+    }
+    return fn;
+}
+function getNextOrder(roomInfo) {
+    return (roomInfo.order + roomInfo.playOrder + roomInfo.players.length) % roomInfo.players.length;
 }

@@ -3,6 +3,7 @@ import type { Controllers, ClientGameKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import { get } from '../utils/customCRUD';
 import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, getSpecifiedCards, updatePlayerCardInfo } from '../services/game';
+import { TaskQueue } from '../utils';
 
 const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
   START_GAME: (roomCode: string, sc, io) => {
@@ -49,8 +50,10 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
         type: 'RES_OUT_OF_THE_CARD'
       }
     const lastCard = roomInfo.lastCard;
+    // 新建任务队列
+    const tasks = new TaskQueue();
     // 判断牌的类型，做出操作
-    const stauts = checkCards(player.cards!,cardsIndex,lastCard);
+    const stauts = checkCards(player.cards!,cardsIndex,lastCard,tasks,roomInfo);
     if(!stauts){
       // 检测不通过
       return {
@@ -60,8 +63,10 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       }
     }
     // 更新玩家信息
-    const res = updatePlayerCardInfo(player, cardsIndex, roomInfo)
-    if (res?.length === 0) {
+    const newPlayerCards = updatePlayerCardInfo(player, cardsIndex, roomInfo)
+    // 执行所有卡牌任务
+    tasks.exec();
+    if (newPlayerCards?.length === 0) {
       // 有玩家牌全部用完了，则应该结束游戏
       // 更新房间信息
       emitGameOver(roomInfo, io, roomCode);
@@ -75,7 +80,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       emitToNextTurn(io, roomCode, roomInfo);
       return {
         message: '出牌成功',
-        data: res,
+        data: newPlayerCards,
         type: 'RES_OUT_OF_THE_CARD'
       }
     }
@@ -106,7 +111,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       type:'RES_GET_ONE_CARD'
     }
   },
-  NEXT_TURN:(roomCode,sc,io)=>{
+  'NEXT_TURN':(roomCode,sc,io)=>{
     const roomInfo = get(roomCollection,roomCode);
     if(!roomInfo){
       return {

@@ -25,4 +25,6 @@ declare type RoomInfo = RoomData & {
   createTime: number;
   startTime: number;
   endTime: number;
+  playOrder: 1 | -1;
+  accumulation:number
 }

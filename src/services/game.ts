@@ -1,9 +1,7 @@
 import { cardInfomation, InitCardNum } from "../configs/card";
-import { shuffle } from "../utils";
+import { shuffle, TaskQueue } from "../utils";
 import { ServerType, SocketType } from "..";
 import { emitAllPlayers, updateRoomInfoAtEnd } from "./room";
-
-let playOrder = 1;
 
 // 生成游戏卡牌
 export const useCards = () => {
@@ -66,7 +64,7 @@ export function updatePlayerCardInfo(player: PlayerInfo, cardsIndex: number[], r
 
 // 通知玩家进入下一轮
 export function emitToNextTurn(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
-  roomInfo.order = (roomInfo.order + playOrder) % roomInfo.players.length;
+  roomInfo.order = getNextOrder(roomInfo);
   const nextPlayer = roomInfo.players.find((p, i) => i === roomInfo.order);
   if (nextPlayer) {
     emitAllPlayers(io, roomCode, 'NEXT_TURN', {
@@ -96,15 +94,16 @@ export function emitGameOver(roomInfo: RoomInfo, io: ServerType, roomCode: strin
 }
 
 // 检测玩家卡牌
-export function checkCards(cards: CardInfo[], cardsIndex: number[], lastCard: CardInfo | null): boolean {
-  // for (let i = 0; i < cardsIndex.length; i++) {
-  //   const target = cards[i];
-  //   if (!checkCard(target, lastCard)) {
-  //     return false;
-  //   }
-  // }
-  const target = cards[cardsIndex[0]];
-  return checkCard(target,lastCard)
+export function checkCards(cards: CardInfo[], cardsIndex: number[], lastCard: CardInfo | null,tasks:TaskQueue,roomInfo:RoomInfo): boolean {
+  for (let i = 0; i < cardsIndex.length; i++) {
+    const target = cards[cardsIndex[i]];
+    if (!checkCard(target, lastCard)) {
+      return false;
+    }else{
+      tasks.addTask(handleCardByType(target,roomInfo));
+    }
+  }
+  return true
 }
 
 // 检查单张卡牌
@@ -124,3 +123,44 @@ function isSameType(target: CardInfo, lastCard: CardInfo) {
 function isUniversalCard(target:CardInfo){
   return target.type === 'palette' || target.type === 'add-4';
 }
+
+
+function handleCardByType(card:CardInfo,roomInfo:RoomInfo):Function {
+  let fn:Function;
+  switch (card.type) {
+    case 'exchange':
+      fn = ()=>{
+        roomInfo.playOrder = roomInfo.playOrder === 1 ? -1 : 1
+        // TODO 给全部玩家发出通知
+      }
+      break;
+    case 'ban':
+      fn = ()=>{
+        roomInfo.order = getNextOrder(roomInfo);
+        // TODO 给对应玩家发出通知
+      }
+      break;
+    case 'add-2':
+      fn = ()=>{}
+        // TODO 给对应玩家发出通知
+      break;
+    case 'add-4':
+      fn = ()=>{}
+        // TODO 给对应玩家发出通知
+      break;
+    case 'palette':
+      fn = ()=>{}
+        // TODO 给对应玩家发出通知
+      break;
+    default:
+      fn = ()=>{}
+      break;
+  }
+  return fn;
+}
+
+// 获取下一轮的玩家序号
+function getNextOrder(roomInfo: RoomInfo): number {
+  return (roomInfo.order + roomInfo.playOrder + roomInfo.players.length) % roomInfo.players.length;
+}
+

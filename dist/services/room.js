@@ -15,13 +15,15 @@ function createRoom(args, sc, code) {
         players: [],
         gameCards: [],
         userCards: {},
-        order: 0,
+        order: -1,
         status: 'WAITING',
         lastCard: null,
         winnerOrder: [],
         createTime: Date.now(),
         startTime: -1,
         endTime: -1,
+        accumulation: 0,
+        playOrder: 1
     };
     newLocal.players.push(owner);
     return newLocal;

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const room_1 = require("../services/room");
 const customCRUD_1 = require("../utils/customCRUD");
 const game_1 = require("../services/game");
+const utils_1 = require("../utils");
 const gameControllers = {
     START_GAME: (roomCode, sc, io) => {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
@@ -48,8 +49,10 @@ const gameControllers = {
                 type: 'RES_OUT_OF_THE_CARD'
             };
         const lastCard = roomInfo.lastCard;
+        // 新建任务队列
+        const tasks = new utils_1.TaskQueue();
         // 判断牌的类型，做出操作
-        const stauts = (0, game_1.checkCards)(player.cards, cardsIndex, lastCard);
+        const stauts = (0, game_1.checkCards)(player.cards, cardsIndex, lastCard, tasks, roomInfo);
         if (!stauts) {
             // 检测不通过
             return {
@@ -59,8 +62,10 @@ const gameControllers = {
             };
         }
         // 更新玩家信息
-        const res = (0, game_1.updatePlayerCardInfo)(player, cardsIndex, roomInfo);
-        if ((res === null || res === void 0 ? void 0 : res.length) === 0) {
+        const newPlayerCards = (0, game_1.updatePlayerCardInfo)(player, cardsIndex, roomInfo);
+        // 执行所有卡牌任务
+        tasks.exec();
+        if ((newPlayerCards === null || newPlayerCards === void 0 ? void 0 : newPlayerCards.length) === 0) {
             // 有玩家牌全部用完了，则应该结束游戏
             // 更新房间信息
             (0, game_1.emitGameOver)(roomInfo, io, roomCode);
@@ -75,7 +80,7 @@ const gameControllers = {
             (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
             return {
                 message: '出牌成功',
-                data: res,
+                data: newPlayerCards,
                 type: 'RES_OUT_OF_THE_CARD'
             };
         }
@@ -107,7 +112,7 @@ const gameControllers = {
             type: 'RES_GET_ONE_CARD'
         };
     },
-    NEXT_TURN: (roomCode, sc, io) => {
+    'NEXT_TURN': (roomCode, sc, io) => {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (!roomInfo) {
             return {
