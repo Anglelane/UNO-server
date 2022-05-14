@@ -140,21 +140,5 @@ const gameControllers = {
         // 通知所有玩家进入下一轮，更新客户端信息
         (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
     }),
-    // 'SUBMIT_COLOR':(data,sc,io)=>{
-    // const {color,roomCode} = data;
-    // const roomInfo = get(roomCollection,roomCode);
-    // if(!roomInfo) return{
-    //   message: '房间不存在',
-    //     data: null,
-    //     type: 'RES_NEXT_TURN'
-    // }
-    // roomInfo.lastCard!.color = color;
-    // // 更改房间颜色
-    // emitAllPlayers(io,roomCode,'COLOR_IS_CHANGE',{
-    //   message:'卡牌颜色更改为：'+ colorList[color as CardColor],
-    //   type:'COLOR_IS_CHANGE',
-    //   data:color
-    // })
-    // }
 };
 exports.default = gameControllers;

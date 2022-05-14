@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.dealCards = exports.getSpecifiedCards = exports.useCards = void 0;
+exports.checkCards = exports.emitGameOver = exports.emitToNextTurn = exports.updatePlayerCardInfo = exports.dealCardsToPlayers = exports.emitDealCardsToPlayer = exports.getSpecifiedCards = exports.useCards = void 0;
 const card_1 = require("../configs/card");
 const utils_1 = require("../utils");
 const room_1 = require("./room");
@@ -24,14 +24,14 @@ function getSpecifiedCards(cards, num) {
 }
 exports.getSpecifiedCards = getSpecifiedCards;
 // 给指定玩家发指定数量的牌
-function dealCards(sc, socketId, cards, num) {
-    sc.to(socketId).emit('DEAL_CARDS', {
+function emitDealCardsToPlayer(io, socketId, newPlayerCards, num) {
+    io.to(socketId).emit('DEAL_CARDS', {
         message: `获得卡牌 ${num} 张`,
-        data: getSpecifiedCards(cards, num),
+        data: newPlayerCards,
         type: 'RES_DEAL_CARDS'
     });
 }
-exports.dealCards = dealCards;
+exports.emitDealCardsToPlayer = emitDealCardsToPlayer;
 // 游戏开始，给所有玩家发牌
 function dealCardsToPlayers(io, roomCode, roomInfo) {
     io.sockets.in(roomCode).allSockets().then((res) => {
@@ -144,8 +144,9 @@ function handleCardByType(card, roomInfo, io, sc) {
             break;
         case 'add-2':
             fn = () => {
+                dealCardsToPlayer(io, roomInfo, 2);
+                roomInfo.order = getNextOrder(roomInfo);
             };
-            // TODO 给对应玩家发出通知
             break;
         case 'add-4':
             fn = () => {
@@ -156,8 +157,7 @@ function handleCardByType(card, roomInfo, io, sc) {
                         data: null
                     });
                     sc.once('SUBMIT_COLOR', (res) => {
-                        const { data } = res;
-                        const { color, roomCode } = data;
+                        const { data: { color, roomCode } } = res;
                         const roomInfo = (0, utils_1.get)(room_1.roomCollection, roomCode);
                         if (!roomInfo) {
                             resolve({
@@ -173,7 +173,10 @@ function handleCardByType(card, roomInfo, io, sc) {
                             type: 'COLOR_IS_CHANGE',
                             data: color
                         });
+                        dealCardsToPlayer(io, roomInfo, 4);
+                        roomInfo.order = getNextOrder(roomInfo);
                         resolve({
+                            message: '卡牌颜色更改为：' + card_1.colorList[color],
                             data: null,
                             type: 'RES_SUBMIT_COLOR'
                         });
@@ -224,4 +227,11 @@ function handleCardByType(card, roomInfo, io, sc) {
 // 获取下一轮的玩家序号
 function getNextOrder(roomInfo) {
     return (roomInfo.order + roomInfo.playOrder + roomInfo.players.length) % roomInfo.players.length;
+}
+// 给玩家添加牌
+function dealCardsToPlayer(io, roomInfo, num) {
+    const nextPlayer = roomInfo.players[getNextOrder(roomInfo)];
+    nextPlayer.cards.push(...getSpecifiedCards(roomInfo.gameCards, num));
+    // 通知玩家
+    emitDealCardsToPlayer(io, nextPlayer.socketId, nextPlayer.cards, num);
 }
