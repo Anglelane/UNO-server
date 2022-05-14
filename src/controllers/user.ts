@@ -4,7 +4,7 @@ import { createUser, userCollection } from '../services/user';
 import { has, set } from '../utils/customCRUD';
 
 const userControllers: Controllers<ClientUserKeys, SocketType, ServerType> = {
-  CREATE_USER: (args) => {
+  CREATE_USER:async (args) => {
     const { id, name } = args as UserInfo;
     const key = (id + name);
     if (has(userCollection, key)) {

@@ -1,12 +1,21 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const room_1 = require("../services/room");
 const customCRUD_1 = require("../utils/customCRUD");
 const game_1 = require("../services/game");
 const utils_1 = require("../utils");
-const configs_1 = require("../configs");
+// import { colorList } from '../configs';
 const gameControllers = {
-    START_GAME: (roomCode, sc, io) => {
+    START_GAME: (roomCode, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (!roomInfo)
             // 房间code有误
@@ -32,8 +41,8 @@ const gameControllers = {
             data: null,
             type: 'RES_START_GAME'
         };
-    },
-    OUT_OF_THE_CARD: (data, sc, io) => {
+    }),
+    OUT_OF_THE_CARD: (data, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const { roomCode, cardsIndex } = data;
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (!roomInfo)
@@ -46,6 +55,12 @@ const gameControllers = {
         if (!player)
             return {
                 message: '玩家不存在',
+                data: null,
+                type: 'RES_OUT_OF_THE_CARD'
+            };
+        if (cardsIndex.length === 0)
+            return {
+                message: '请选择要出的牌',
                 data: null,
                 type: 'RES_OUT_OF_THE_CARD'
             };
@@ -65,7 +80,7 @@ const gameControllers = {
         // 更新玩家信息
         const newPlayerCards = (0, game_1.updatePlayerCardInfo)(player, cardsIndex, roomInfo);
         // 执行所有卡牌任务
-        tasks.exec();
+        yield tasks.exec();
         if ((newPlayerCards === null || newPlayerCards === void 0 ? void 0 : newPlayerCards.length) === 0) {
             // 有玩家牌全部用完了，则应该结束游戏
             // 更新房间信息
@@ -85,8 +100,8 @@ const gameControllers = {
                 type: 'RES_OUT_OF_THE_CARD'
             };
         }
-    },
-    'GET_ONE_CARD': (roomCode, sc, io) => {
+    }),
+    'GET_ONE_CARD': (roomCode, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (!roomInfo)
@@ -112,8 +127,8 @@ const gameControllers = {
             },
             type: 'RES_GET_ONE_CARD'
         };
-    },
-    'NEXT_TURN': (roomCode, sc, io) => {
+    }),
+    'NEXT_TURN': (roomCode, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (!roomInfo) {
             return {
@@ -124,23 +139,22 @@ const gameControllers = {
         }
         // 通知所有玩家进入下一轮，更新客户端信息
         (0, game_1.emitToNextTurn)(io, roomCode, roomInfo);
-    },
-    'SUBMIT_COLOR': (data, sc, io) => {
-        const { color, roomCode } = data;
-        const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
-        if (!roomInfo)
-            return {
-                message: '房间不存在',
-                data: null,
-                type: 'RES_NEXT_TURN'
-            };
-        roomInfo.lastCard.color = color;
-        // 更改房间颜色
-        (0, room_1.emitAllPlayers)(io, roomCode, 'COLOR_IS_CHANGE', {
-            message: '卡牌颜色更改为：' + configs_1.colorList[color],
-            type: 'COLOR_IS_CHANGE',
-            data: color
-        });
-    }
+    }),
+    // 'SUBMIT_COLOR':(data,sc,io)=>{
+    // const {color,roomCode} = data;
+    // const roomInfo = get(roomCollection,roomCode);
+    // if(!roomInfo) return{
+    //   message: '房间不存在',
+    //     data: null,
+    //     type: 'RES_NEXT_TURN'
+    // }
+    // roomInfo.lastCard!.color = color;
+    // // 更改房间颜色
+    // emitAllPlayers(io,roomCode,'COLOR_IS_CHANGE',{
+    //   message:'卡牌颜色更改为：'+ colorList[color as CardColor],
+    //   type:'COLOR_IS_CHANGE',
+    //   data:color
+    // })
+    // }
 };
 exports.default = gameControllers;

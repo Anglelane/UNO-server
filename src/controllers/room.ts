@@ -6,7 +6,7 @@ import { randomCoding } from '../utils';
 import { deleteKey, get, set } from '../utils/customCRUD';
 
 const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
-  CREATE_ROOM: (data, sc, io) => {
+  CREATE_ROOM:async (data, sc, io) => {
     const code = randomCoding();
     // 创建频道
     sc.join(code);
@@ -18,7 +18,7 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
       type: 'RES_CREATE_ROOM',
     };
   },
-  JOIN_ROOM: (data, sc, io) => {
+  JOIN_ROOM:async (data, sc, io) => {
     const { roomCode, userInfo } = data;
     const roomInfo = get(roomCollection, roomCode) as RoomInfo;
     if (roomInfo) {
@@ -53,7 +53,7 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
       type: 'RES_JOIN_ROOM',
     };
   },
-  LEAVE_ROOM: (data, sc, io) => {
+  LEAVE_ROOM: async (data, sc, io) => {
     const { roomCode, userInfo } = data
     const roomInfo = get(roomCollection,roomCode);
     if (roomInfo) {
@@ -82,7 +82,7 @@ const roomControllers: Controllers<ClientRoomKeys, SocketType, ServerType> = {
       type: 'RES_LEAVE_ROOM'
     }
   },
-  DISSOLVE_ROOM: (data, sc, io) => {
+  DISSOLVE_ROOM:async (data, sc, io) => {
     const code = data;
     emitAllPlayers(io, code, 'RES_DISSOLVE_ROOM', {
       message: '房间已解散',

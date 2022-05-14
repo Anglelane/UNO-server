@@ -76,7 +76,7 @@ type ServerKeys = keyof ServerToClientEvents
 
 declare type ClientRoomKeys = 'CREATE_ROOM'|'JOIN_ROOM'|'LEAVE_ROOM'|'DISSOLVE_ROOM'
 declare type ClientUserKeys = 'CREATE_USER'
-declare type ClientGameKeys = 'OUT_OF_THE_CARD'|'START_GAME'|'GET_ONE_CARD'|'NEXT_TURN'|'SUBMIT_COLOR'
+declare type ClientGameKeys = 'OUT_OF_THE_CARD'|'START_GAME'|'GET_ONE_CARD'|'NEXT_TURN'
 
 // declare type Events<T> = {
 //   T: T extends ServerKeys
@@ -90,7 +90,7 @@ declare type ControllerKeys = ClientRoomKeys | ClientUserKeys | ClientGameKeys
 
 declare type Controllers<T extends keyof EToD, S, I> = {
   [K in T]: (args: K extends keyof ClientToServerEvents ? GetDataTypeOfEventName<K> : unknown, sc: S, io: I)
-  => addRESPrefix<K> extends keyof ClientToServerEvents ? ServerDataType<addRESPrefix<K>,GetDataTypeOfEventName<addRESPrefix<K>>> : void
+  => Promise<addRESPrefix<K> extends keyof ClientToServerEvents ? ServerDataType<addRESPrefix<K>,GetDataTypeOfEventName<addRESPrefix<K>>> : void>
 }
 
 declare interface InterServerEvents {

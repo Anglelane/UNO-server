@@ -1,11 +1,20 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const game_1 = require("../services/game");
 const room_1 = require("../services/room");
 const utils_1 = require("../utils");
 const customCRUD_1 = require("../utils/customCRUD");
 const roomControllers = {
-    CREATE_ROOM: (data, sc, io) => {
+    CREATE_ROOM: (data, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const code = (0, utils_1.randomCoding)();
         // 创建频道
         sc.join(code);
@@ -16,8 +25,8 @@ const roomControllers = {
             data: roomInfo,
             type: 'RES_CREATE_ROOM',
         };
-    },
-    JOIN_ROOM: (data, sc, io) => {
+    }),
+    JOIN_ROOM: (data, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const { roomCode, userInfo } = data;
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (roomInfo) {
@@ -51,8 +60,8 @@ const roomControllers = {
             data: null,
             type: 'RES_JOIN_ROOM',
         };
-    },
-    LEAVE_ROOM: (data, sc, io) => {
+    }),
+    LEAVE_ROOM: (data, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const { roomCode, userInfo } = data;
         const roomInfo = (0, customCRUD_1.get)(room_1.roomCollection, roomCode);
         if (roomInfo) {
@@ -81,8 +90,8 @@ const roomControllers = {
             data: {},
             type: 'RES_LEAVE_ROOM'
         };
-    },
-    DISSOLVE_ROOM: (data, sc, io) => {
+    }),
+    DISSOLVE_ROOM: (data, sc, io) => __awaiter(void 0, void 0, void 0, function* () {
         const code = data;
         (0, room_1.emitAllPlayers)(io, code, 'RES_DISSOLVE_ROOM', {
             message: '房间已解散',
@@ -96,6 +105,6 @@ const roomControllers = {
             data: null,
             type: 'RES_DISSOLVE_ROOM'
         };
-    }
+    })
 };
 exports.default = roomControllers;

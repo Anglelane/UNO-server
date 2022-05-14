@@ -100,6 +100,8 @@ exports.emitGameOver = emitGameOver;
 function checkCards(cards, cardsIndex, lastCard, tasks, roomInfo, io, sc) {
     for (let i = 0; i < cardsIndex.length; i++) {
         const target = cards[cardsIndex[i]];
+        console.log('target:', target);
+        console.log('lastCard:', lastCard);
         if (!checkCard(target, lastCard)) {
             return false;
         }
@@ -147,23 +149,71 @@ function handleCardByType(card, roomInfo, io, sc) {
             break;
         case 'add-4':
             fn = () => {
-                io.to(sc.id).emit('SELECT_COLOR', {
-                    message: '请选择颜色',
-                    type: 'SELECT_COLOR',
-                    data: null
+                return new Promise((resolve, reject) => {
+                    io.to(sc.id).emit('SELECT_COLOR', {
+                        message: '请选择颜色',
+                        type: 'SELECT_COLOR',
+                        data: null
+                    });
+                    sc.once('SUBMIT_COLOR', (res) => {
+                        const { data } = res;
+                        const { color, roomCode } = data;
+                        const roomInfo = (0, utils_1.get)(room_1.roomCollection, roomCode);
+                        if (!roomInfo) {
+                            resolve({
+                                message: '房间不存在',
+                                data: null,
+                                type: 'RES_SUBMIT_COLOR'
+                            });
+                        }
+                        roomInfo.lastCard.color = color;
+                        // 更改房间颜色
+                        (0, room_1.emitAllPlayers)(io, roomCode, 'COLOR_IS_CHANGE', {
+                            message: '卡牌颜色更改为：' + card_1.colorList[color],
+                            type: 'COLOR_IS_CHANGE',
+                            data: color
+                        });
+                        resolve({
+                            data: null,
+                            type: 'RES_SUBMIT_COLOR'
+                        });
+                    });
                 });
             };
-            // TODO 给对应玩家发出通知
             break;
         case 'palette':
             fn = () => {
-                io.to(sc.id).emit('SELECT_COLOR', {
-                    message: '请选择颜色',
-                    type: 'SELECT_COLOR',
-                    data: null
+                return new Promise((resolve, reject) => {
+                    io.to(sc.id).emit('SELECT_COLOR', {
+                        message: '请选择颜色',
+                        type: 'SELECT_COLOR',
+                        data: null
+                    });
+                    sc.once('SUBMIT_COLOR', (res) => {
+                        const { data } = res;
+                        const { color, roomCode } = data;
+                        const roomInfo = (0, utils_1.get)(room_1.roomCollection, roomCode);
+                        if (!roomInfo) {
+                            resolve({
+                                message: '房间不存在',
+                                data: null,
+                                type: 'RES_SUBMIT_COLOR'
+                            });
+                        }
+                        roomInfo.lastCard.color = color;
+                        // 更改房间颜色
+                        (0, room_1.emitAllPlayers)(io, roomCode, 'COLOR_IS_CHANGE', {
+                            message: '卡牌颜色更改为：' + card_1.colorList[color],
+                            type: 'COLOR_IS_CHANGE',
+                            data: color
+                        });
+                        resolve({
+                            data: null,
+                            type: 'RES_SUBMIT_COLOR'
+                        });
+                    });
                 });
             };
-            // TODO 给对应玩家发出通知
             break;
         default:
             fn = () => { };

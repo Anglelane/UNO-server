@@ -13,14 +13,14 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 export type ServerType = typeof io;
 export type SocketType = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents>;
 
-io.on('connection', (socket) => {
+io.on('connection',(socket) => {
   console.log(`${socket.id}:连接成功`);
   Object.keys(controllers).forEach((key) => {
-    socket.on(key as any, (args: any) => {
+    socket.on(key as any, async (args: any) => {
       console.log(key, ':', args);
       if(args){
         const { type, data } = args;
-        const res = controllers[type as ControllerKeys](data, socket, io);
+        const res = await controllers[type as ControllerKeys](data, socket, io);
         if(res){
           console.log(res.type, ':', res);
           socket.emit(res.type as any, res as any);

@@ -1,13 +1,13 @@
-import { emitAllPlayers, roomCollection, updateRoomInfoAtStart } from '../services/room';
+import {  roomCollection, updateRoomInfoAtStart } from '../services/room';
 import type { Controllers, ClientGameKeys } from '~/types/server';
 import { ServerType, SocketType } from '..';
 import { get } from '../utils/customCRUD';
 import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, getSpecifiedCards, updatePlayerCardInfo } from '../services/game';
 import { TaskQueue } from '../utils';
-import { colorList } from '../configs';
+// import { colorList } from '../configs';
 
 const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
-  START_GAME: (roomCode: string, sc, io) => {
+  START_GAME: async (roomCode: string, sc, io) => {
     const roomInfo = get(roomCollection, roomCode)
     if (!roomInfo)
       // 房间code有误
@@ -34,7 +34,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       type: 'RES_START_GAME'
     }
   },
-  OUT_OF_THE_CARD: (data, sc, io) => {
+  OUT_OF_THE_CARD:async (data, sc, io) => {
     const { roomCode, cardsIndex } = data
     const roomInfo = get(roomCollection, roomCode);
     if (!roomInfo)
@@ -47,6 +47,11 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
     if (!player)
       return {
         message: '玩家不存在',
+        data: null,
+        type: 'RES_OUT_OF_THE_CARD'
+      }
+      if(cardsIndex.length === 0) return{
+        message: '请选择要出的牌',
         data: null,
         type: 'RES_OUT_OF_THE_CARD'
       }
@@ -66,7 +71,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
     // 更新玩家信息
     const newPlayerCards = updatePlayerCardInfo(player, cardsIndex, roomInfo)
     // 执行所有卡牌任务
-    tasks.exec();
+    await tasks.exec()
     if (newPlayerCards?.length === 0) {
       // 有玩家牌全部用完了，则应该结束游戏
       // 更新房间信息
@@ -86,7 +91,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       }
     }
   },
-  'GET_ONE_CARD':(roomCode,sc,io)=>{
+  'GET_ONE_CARD': async (roomCode,sc,io)=>{
     const roomInfo = get(roomCollection,roomCode);
     if(!roomInfo)
       return {
@@ -112,7 +117,7 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       type:'RES_GET_ONE_CARD'
     }
   },
-  'NEXT_TURN':(roomCode,sc,io)=>{
+  'NEXT_TURN':async (roomCode,sc,io)=>{
     const roomInfo = get(roomCollection,roomCode);
     if(!roomInfo){
       return {
@@ -124,22 +129,6 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
     // 通知所有玩家进入下一轮，更新客户端信息
     emitToNextTurn(io, roomCode, roomInfo);
   },
-  'SUBMIT_COLOR':(data,sc,io)=>{
-    const {color,roomCode} = data;
-    const roomInfo = get(roomCollection,roomCode);
-    if(!roomInfo) return{
-      message: '房间不存在',
-        data: null,
-        type: 'RES_NEXT_TURN'
-    }
-    roomInfo.lastCard!.color = color;
-    // 更改房间颜色
-    emitAllPlayers(io,roomCode,'COLOR_IS_CHANGE',{
-      message:'卡牌颜色更改为：'+ colorList[color as CardColor],
-      type:'COLOR_IS_CHANGE',
-      data:color
-    })
-  }
 };
 
 export default gameControllers;
