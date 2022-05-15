@@ -41,6 +41,8 @@ const cardInfomation = () => [
         icon: 'fa6-solid:palette',
         color: '#9a9a9a',
     }),
-];
+].map((item) => {
+    return Object.assign(Object.assign({}, item), { cardId: Math.random() * 10000 });
+});
 exports.cardInfomation = cardInfomation;
 exports.InitCardNum = 7;

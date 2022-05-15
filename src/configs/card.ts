@@ -10,7 +10,7 @@ export const colorList :{
   '#FF6666':'红色' ,'#99CC66':'绿色', '#99CCFF':'蓝色', '#FFCC33':'黄色'
 }
 
-export const cardInfomation = () => [
+export const cardInfomation = ():CardInfo[] => [
   ...[...[...genArr0To9, ...genArr1To9].map((i) => {
     return {
       type: `number-${i}`,
@@ -47,6 +47,11 @@ export const cardInfomation = () => [
     icon: 'fa6-solid:palette',
     color: '#9a9a9a',
   }),
-]
+].map((item)=>{
+  return{
+    ...item,
+    cardId:Math.random()*10000
+  }
+})
 
 export const InitCardNum = 7
