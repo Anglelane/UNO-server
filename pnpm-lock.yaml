@@ -12,6 +12,7 @@ specifiers:
   express: ^4.18.1
   nodemon: ^2.0.16
   socket.io: ^4.5.0
+  tslib: '*'
   typescript: ^4.6.4
   ws: ^8.6.0
 
@@ -30,6 +31,7 @@ devDependencies:
   eslint-config-airbnb-base: 15.0.0_3bd94fa9be989baab6ef2e6b5dec3766
   eslint-plugin-import: 2.26.0_eslint@7.32.0
   nodemon: 2.0.16
+  tslib: 1.14.1
   typescript: 4.6.4
 
 packages:

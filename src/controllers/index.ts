@@ -1,5 +1,4 @@
-import type { ControllerKeys, Controllers } from '~/types/server';
-import { ServerType, SocketType } from '..';
+import type { ControllerKeys, Controllers, ServerType, SocketType } from '../types/server';
 import gameControllers from './game';
 import roomControllers from './room';
 import userControllers from './user';

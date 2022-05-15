@@ -1,6 +1,5 @@
 import {  roomCollection, updateRoomInfoAtStart } from '../services/room';
-import type { Controllers, ClientGameKeys } from '~/types/server';
-import { ServerType, SocketType } from '..';
+import type { Controllers, ClientGameKeys, SocketType, ServerType } from '~/types/server';
 import { get } from '../utils/customCRUD';
 import { checkCards, dealCardsToPlayers, emitGameOver, emitToNextTurn, getSpecifiedCards, updatePlayerCardInfo } from '../services/game';
 import { TaskQueue } from '../utils';

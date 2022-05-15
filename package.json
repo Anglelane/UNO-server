@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc && nodemon ./dist/index.js -w"
+    "dev": "tsc && nodemon ./dist/index.js -w",
+    "build": "rollup -c rollup.config.js"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.2",
     "nodemon": "^2.0.16",
+    "tslib": "*",
     "typescript": "^4.6.4"
   },
   "dependencies": {

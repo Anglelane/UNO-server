@@ -1,6 +1,5 @@
 import {  InitCardNum } from "../configs/card";
-import type { ServerType, SocketType } from "..";
-import type { ServerDataType, ServerKeys } from "~/types/server";
+import type { ServerDataType, ServerKeys, ServerType, SocketType } from "~/types/server";
 import { useCards } from "./game";
 
 export const roomCollection = new Map<string, RoomInfo>();

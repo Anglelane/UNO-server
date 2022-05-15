@@ -1,6 +1,7 @@
 import type { RoomData, RoomInfo, PlayerInfo } from "./room"
 import type { UserInfo } from "./user"
 
+
 declare interface ClientDataType<T, D> {
   type: T,
   data: D
@@ -95,3 +96,7 @@ declare type Controllers<T extends keyof EToD, S, I> = {
 
 declare interface InterServerEvents {
 }
+
+
+declare type ServerType = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents>
+declare type SocketType = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents>;

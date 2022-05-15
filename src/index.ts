@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import controllers from './controllers';
 import type { ControllerKeys, ClientToServerEvents, InterServerEvents, ServerToClientEvents } from './types/server';
 
@@ -9,9 +9,6 @@ const httpServer = createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents>(httpServer, {
   serveClient: false,
 });
-
-export type ServerType = typeof io;
-export type SocketType = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents>;
 
 io.on('connection',(socket) => {
   console.log(`${socket.id}:连接成功`);

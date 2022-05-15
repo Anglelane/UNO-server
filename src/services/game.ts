@@ -1,6 +1,7 @@
+import type { ServerType, SocketType } from "~/types/server";
 import { cardInfomation, colorList, InitCardNum } from "../configs/card";
 import { get, shuffle, TaskQueue } from "../utils";
-import { ServerType, SocketType } from "..";
+
 import { emitAllPlayers, roomCollection, updateRoomInfoAtEnd } from "./room";
 
 // 生成游戏卡牌
@@ -32,7 +33,7 @@ export function emitDealCardsToPlayer(io: ServerType, socketId: string, newPlaye
 
 // 游戏开始，给所有玩家发牌
 export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: RoomInfo) {
-  io.sockets.in(roomCode).allSockets().then((res) => {
+  io.sockets.in(roomCode).allSockets().then((res:any) => {
     for (const id of res) {
       const player = roomInfo.players.find((p) => p.socketId === id);
       console.log('player:', player)
@@ -156,7 +157,7 @@ function handleCardByType(card:CardInfo,roomInfo:RoomInfo,io:ServerType,sc:Socke
             type:'SELECT_COLOR',
             data:null
           })
-          sc.once('SUBMIT_COLOR',(res)=>{
+          sc.once('SUBMIT_COLOR',(res:any)=>{
             const {data:{color,roomCode}}= res
             const roomInfo = get(roomCollection,roomCode);
             if(!roomInfo) {
@@ -192,7 +193,7 @@ function handleCardByType(card:CardInfo,roomInfo:RoomInfo,io:ServerType,sc:Socke
             type:'SELECT_COLOR',
             data:null
           })
-          sc.once('SUBMIT_COLOR',(res)=>{
+          sc.once('SUBMIT_COLOR',(res:any)=>{
             const {data}= res
             const {color,roomCode} = data;
             const roomInfo = get(roomCollection,roomCode);

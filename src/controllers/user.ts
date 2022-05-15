@@ -1,5 +1,4 @@
-import type { Controllers, ClientUserKeys } from '~/types/server';
-import { ServerType, SocketType } from '..';
+import type { Controllers, ClientUserKeys, ServerType, SocketType } from '~/types/server';
 import { createUser, userCollection } from '../services/user';
 import { has, set } from '../utils/customCRUD';
 

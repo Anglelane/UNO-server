@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "module": "commonjs",
     "target": "es2016",
-    "lib": ["DOM", "ESNext"],
+    "lib": [ "ESNext"],
     "strict": true,
     "outDir": "./dist",
     "jsx": "preserve",
