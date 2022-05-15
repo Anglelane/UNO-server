@@ -107,7 +107,6 @@ const gameControllers: Controllers<ClientGameKeys, SocketType, ServerType> = {
       }
     const card = getSpecifiedCards(roomInfo.gameCards,1);
     player.cards?.push(...card)
-    player.cardNum++;
     return{
       data:{
         userCards:player.cards,

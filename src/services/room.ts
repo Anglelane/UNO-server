@@ -1,4 +1,3 @@
-import {  InitCardNum } from "../configs/card";
 import type { ServerDataType, ServerKeys, ServerType, SocketType } from "~/types/server";
 import { useCards } from "./game";
 
@@ -34,7 +33,6 @@ export function createPlayer(userInfo: UserInfo, socketId: string): PlayerInfo {
   return {
     ...userInfo,
     socketId,
-    cardNum: 0,
     cards:null,
     lastCard: null
   }
@@ -61,7 +59,6 @@ export function updateRoomInfoAtStart(roomInfo:RoomInfo){
     // 生成游戏卡牌
     roomInfo.gameCards = useCards();
     roomInfo.players.forEach((item)=>{
-      item.cardNum = InitCardNum;
       item.lastCard = null
     })
     roomInfo.createTime = Date.now();
@@ -71,6 +68,6 @@ export function updateRoomInfoAtStart(roomInfo:RoomInfo){
 // 游戏结束，更新房间信息
 export function updateRoomInfoAtEnd(roomInfo:RoomInfo){
   roomInfo.endTime = Date.now();
-  roomInfo.winnerOrder = roomInfo.players.sort((a,b)=>a.cardNum - b.cardNum);
+  roomInfo.winnerOrder = roomInfo.players.sort((a,b)=>a.cards!.length - b.cards!.length);
   roomInfo.status = 'END'
 }

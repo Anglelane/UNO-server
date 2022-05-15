@@ -58,7 +58,6 @@ function updatePlayerCardInfo(player, cardsIndex, roomInfo) {
     cardsIndex.forEach((i) => {
         var _a;
         const deleteCard = (_a = player.cards) === null || _a === void 0 ? void 0 : _a.splice(i, 1);
-        player.cardNum--;
         player.lastCard = Object.assign({}, deleteCard[0]);
         roomInfo.lastCard = Object.assign({}, deleteCard[0]);
     });

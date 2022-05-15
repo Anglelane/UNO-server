@@ -56,7 +56,6 @@ export function dealCardsToPlayers(io: ServerType, roomCode: string, roomInfo: R
 export function updatePlayerCardInfo(player: PlayerInfo, cardsIndex: number[], roomInfo: RoomInfo) {
   cardsIndex.forEach((i) => {
     const deleteCard = player.cards?.splice(i, 1);
-    player.cardNum--;
     player.lastCard = { ...deleteCard![0] };
     roomInfo.lastCard = { ...deleteCard![0] };
   })

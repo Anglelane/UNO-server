@@ -119,7 +119,6 @@ const gameControllers = {
             };
         const card = (0, game_1.getSpecifiedCards)(roomInfo.gameCards, 1);
         (_a = player.cards) === null || _a === void 0 ? void 0 : _a.push(...card);
-        player.cardNum++;
         return {
             data: {
                 userCards: player.cards,
